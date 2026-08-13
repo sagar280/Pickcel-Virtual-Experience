@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Industries — arched carousel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:        #000000;   /* true black */
+    --bg-deep:   #141414;   /* empty-card slate */
+    --ink:       #EDE7F5;   /* light type on dark */
+    --ink-soft:  #9C8FB6;
+    --paper:     #F8F1F9;
+    --line:      rgba(237,231,245,.14);
+    --violet:    #6E4BD8;
+    --rose:      #C2477E;
+    --tour:      #C86B36;
+    --tour-hi:   #D97C43;
+    /* ---- SIZE CONTROLS (press S in the page to tune these live) ---- */
+    --card-vw: 26vw;                                  /* card width          */
+    --card-ar: 0.8;                                   /* width / height      */
+    --gap:     26px;                                  /* space between cards */
+    --card-w:  clamp(190px, var(--card-vw), 92vw);
+    --radius:  4px;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html,body{ margin:0; height:100%; }
+
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family:"DM Sans", ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+
+  /* ---------- Section shell ---------- */
+
+  /* ---------- Background: drifting glows, pixel grid, echo rings, grain ---------- */
+
+  .bgfx{
+    position:fixed; inset:0; z-index:0;
+    pointer-events:none; overflow:hidden;
+  }
+
+  .glow{
+    position:absolute;
+    border-radius:50%;
+    filter:blur(90px);
+    will-change:transform;
+  }
+  .g1{
+    width:58vw; height:58vw; left:-22vw; top:-26vw;
+    background:radial-gradient(circle, var(--violet) 0%, transparent 68%);
+    opacity:.16;
+    animation:drift-a 26s ease-in-out infinite alternate;
+  }
+  .g2{
+    width:50vw; height:50vw; right:-20vw; bottom:-24vw;
+    background:radial-gradient(circle, var(--rose) 0%, transparent 68%);
+    opacity:.11;
+    animation:drift-b 32s ease-in-out infinite alternate;
+  }
+  .g3{
+    width:60vw; height:34vw; left:20vw; top:64vh;
+    background:radial-gradient(ellipse, #2F5BD0 0%, transparent 70%);
+    opacity:.08;
+    animation:drift-c 38s ease-in-out infinite alternate;
+  }
+
+  @keyframes drift-a{ to{ transform:translate3d(7vw,4vh,0) scale(1.12); } }
+  @keyframes drift-b{ to{ transform:translate3d(-6vw,-5vh,0) scale(1.08); } }
+  @keyframes drift-c{ to{ transform:translate3d(-4vw,3vh,0) scale(.92); } }
+
+  /* pixel grid — the vernacular of the screens themselves */
+  .grid{
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(237,231,245,.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(237,231,245,.055) 1px, transparent 1px);
+    background-size:74px 74px;
+    -webkit-mask-image:radial-gradient(ellipse 72% 62% at 50% 44%, #000 18%, transparent 76%);
+            mask-image:radial-gradient(ellipse 72% 62% at 50% 44%, #000 18%, transparent 76%);
+  }
+
+  /* hairline rings echoing the carousel's own curve */
+  .rings{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    fill:none;
+    stroke:rgba(237,231,245,.08);
+    stroke-width:1;
+    vector-effect:non-scaling-stroke;
+  }
+  .rings circle:nth-child(2){ stroke:rgba(237,231,245,.055); }
+  .rings circle:nth-child(3){ stroke:rgba(237,231,245,.035); }
+
+  .grain{
+    position:absolute; inset:0;
+    opacity:.05;
+    mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .stage{
+    position:relative;
+    z-index:1;
+    min-height:100svh;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    padding: clamp(32px,5.5vh,64px) 0 0;
+    overflow:hidden;
+  }
+
+  .eyebrow{
+    margin:0 auto;
+    text-align:center;
+    font-family:"Bricolage Grotesque", sans-serif;
+    font-weight:600;
+    font-size: clamp(24px, 3.2vw, 46px);
+    line-height:1.06;
+    letter-spacing:-0.03em;
+    color:var(--ink);
+    padding:0 24px;
+    text-wrap:balance;
+  }
+
+  .eyebrow small{
+    display:block;
+    margin-top:10px;
+    font-family:"DM Sans",sans-serif;
+    font-weight:400;
+    font-size:12.5px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    opacity:.68;
+  }
+
+  /* ---------- Carousel ---------- */
+
+  .viewport{
+    position:relative;
+    margin-top: clamp(4px,1vh,14px);
+    padding: 56px 0 84px;      /* room for the arc travel */
+    overflow:hidden;
+    cursor:grab;
+  }
+  .viewport.dragging{ cursor:grabbing; }
+
+  .track{
+    display:flex;
+    gap:var(--gap);
+    width:max-content;
+    will-change:transform;
+    padding-inline: var(--gap);
+  }
+
+  .card{
+    flex:0 0 var(--card-w);
+    width:var(--card-w);
+    aspect-ratio: var(--card-ar);
+    position:relative;
+    transform-origin:50% 50%;
+    will-change:transform;
+  }
+
+  .frame{
+    position:absolute;
+    inset:0;
+    border-radius:var(--radius);
+    overflow:hidden;
+    background:var(--bg-deep);
+    box-shadow:
+      0 26px 60px -30px rgba(0,0,0,.9),
+      inset 0 0 0 1px rgba(237,231,245,.09);
+    transition: box-shadow .45s ease;
+  }
+  .card:hover .frame{
+    box-shadow:
+      0 34px 70px -28px rgba(0,0,0,.95),
+      inset 0 0 0 1px rgba(237,231,245,.22);
+  }
+
+  .frame img, .frame video{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover;
+    display:block;
+    transform:scale(1.02);
+    transition: transform .7s cubic-bezier(.2,.7,.2,1), filter .5s ease;
+  }
+  .card:hover .frame img, .card:hover .frame video{ transform:scale(1.08); }
+
+  /* placeholder state */
+  .ph{
+    position:absolute; inset:0;
+    display:grid; place-content:center; gap:12px;
+    justify-items:center;
+    text-align:center;
+    padding:24px;
+    background:
+      repeating-linear-gradient(135deg,
+        rgba(237,231,245,.04) 0 1px, transparent 1px 12px),
+      linear-gradient(160deg, #2B2246 0%, #1B1530 58%, #241B3B 100%);
+    color:var(--ink-soft);
+  }
+  .card.filled .ph{ display:none; }
+
+  .ph svg{ opacity:.85; }
+  .ph b{
+    font-family:"Bricolage Grotesque",sans-serif;
+    font-weight:600; font-size:14px; letter-spacing:-0.01em;
+  }
+  .ph span{
+    font-size:11.5px; letter-spacing:.05em; text-transform:uppercase;
+    opacity:.72; max-width:20ch; line-height:1.5;
+  }
+
+  /* hover veil + label */
+  .veil{
+    position:absolute; inset:0;
+    background:linear-gradient(to top, rgba(9,6,16,.9) 0%, rgba(9,6,16,.36) 46%, rgba(9,6,16,0) 76%);
+    opacity:.88;                         /* always on — the label lives here */
+    transition:opacity .28s ease;
+  }
+  .card:hover .veil, .card:focus-within .veil{ opacity:1; }
+
+  .label{
+    position:absolute;
+    left:0; right:0; bottom:0;
+    padding: clamp(16px,1.5vw,24px);
+    display:flex; align-items:baseline; gap:10px;
+    color:var(--paper);
+    transition: transform .32s cubic-bezier(.2,.7,.2,1);
+  }
+
+  .label b{
+    font-family:"Bricolage Grotesque",sans-serif;
+    font-weight:600;
+    font-size: clamp(16px, 1.5vw, 25px);
+    letter-spacing:-0.02em;
+    white-space:nowrap;
+    text-shadow:0 1px 14px rgba(9,6,16,.5);
+  }
+  .label i{
+    font-style:normal;
+    font-size:17px;
+    transition:transform .34s cubic-bezier(.2,.7,.2,1);
+  }
+  .card:hover .label i, .card:focus-within .label i{ transform:translateX(6px); }
+
+  /* replace chip */
+  .chip{
+    position:absolute;
+    top:10px; right:10px;
+    display:inline-flex; align-items:center; gap:6px;
+    padding:7px 11px;
+    border:0;
+    border-radius:999px;
+    background:rgba(248,241,249,.9);
+    color:var(--ink);
+    font-family:"DM Sans",sans-serif;
+    font-size:11px; font-weight:500; letter-spacing:.04em; text-transform:uppercase;
+    cursor:pointer;
+    opacity:0; transform:translateY(-6px);
+    transition:opacity .35s ease, transform .35s ease;
+    backdrop-filter: blur(6px);
+  }
+  .card:hover .chip, .card:focus-within .chip{ opacity:1; transform:none; }
+  .chip:hover{ background:var(--paper); }
+
+  /* drag-over state */
+  .card.over .frame{
+    outline:2px dashed var(--paper);
+    outline-offset:-10px;
+  }
+  .card.over .veil{ opacity:1; }
+
+  /* ---------- Arc edges (the pink cut, top + bottom) ---------- */
+
+  /* ---------- Primary action ---------- */
+
+  .cta{
+    position:relative; z-index:4;
+    margin-top: clamp(12px,1.8vh,18px);
+    display:flex; justify-content:center;
+    padding:0 24px;
+  }
+
+  .tour{
+    display:inline-flex; align-items:center; gap:9px;
+    padding:9px 20px 9px 16px;
+    border:0; border-radius:999px;
+    background:var(--tour);
+    color:#FBF0E8;
+    font-family:"Bricolage Grotesque", sans-serif;
+    font-weight:600;
+    font-size:clamp(12.5px,0.95vw,14.5px);
+    letter-spacing:-0.01em;
+    cursor:pointer;
+    box-shadow:0 12px 28px -16px rgba(200,107,54,.85);
+    transition:background .3s ease, transform .25s ease, box-shadow .3s ease;
+  }
+  .tour:hover{
+    background:var(--tour-hi);
+    transform:translateY(-2px);
+    box-shadow:0 24px 52px -18px rgba(200,107,54,1);
+  }
+  .tour:active{ transform:translateY(0); }
+  .tour:focus-visible{ outline:2px solid var(--ink); outline-offset:4px; }
+  .tour svg{ flex:none; }
+
+  /* ---------- Controls ---------- */
+
+  .controls{
+    position:relative;
+    z-index:4;
+    margin-top: clamp(16px,2.4vh,26px);
+    display:flex; justify-content:center; gap:14px;
+  }
+
+  .nav{
+    width:52px; height:52px;
+    display:grid; place-items:center;
+    border-radius:50%;
+    border:1.4px solid var(--line);
+    background:rgba(237,231,245,.03);
+    color:var(--ink);
+    cursor:pointer;
+    backdrop-filter:blur(6px);
+    transition: background .3s ease, color .3s ease, border-color .3s ease, transform .3s ease;
+  }
+  .nav:hover{ background:var(--ink); color:var(--bg); border-color:var(--ink); }
+  .nav:active{ transform:scale(.94); }
+  .nav:focus-visible{ outline:2px solid var(--ink); outline-offset:4px; }
+
+  .hint{
+    margin: clamp(14px,2.4vh,26px) auto 0;
+    text-align:center;
+    font-size:12px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    opacity:.6;
+    padding:0 24px;
+  }
+
+  .sr{ position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+
+  /* ---------- Story overlay: stacked scroll-reveal sequence ---------- */
+
+  .story{
+    position:fixed; inset:0; z-index:70;
+    background:var(--bg);
+    opacity:0;
+    visibility:hidden;
+    transition:opacity .45s ease, visibility 0s linear .45s;
+  }
+  .story.on{
+    opacity:1; visibility:visible;
+    transition:opacity .45s ease;
+  }
+
+  .story-scroll{
+    position:absolute; inset:0;
+    overflow-y:auto; overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .story-scroll::-webkit-scrollbar{ display:none; }
+
+  .story-panel{
+    position:sticky; top:0;
+    height:100svh; width:100%;
+    overflow:hidden;
+    background:var(--bg-deep);
+  }
+
+  .story-panel img, .story-panel video{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover;
+    transform:scale(1.12);
+    opacity:.001;
+    transition:transform 1.4s cubic-bezier(.16,.7,.2,1), opacity 1s ease;
+  }
+  .story-panel.in img, .story-panel.in video{ transform:scale(1); opacity:1; }
+
+  .story-ph{
+    position:absolute; inset:0;
+    display:grid; place-content:center; gap:14px; justify-items:center;
+    text-align:center; color:var(--ink-soft);
+    background:
+      repeating-linear-gradient(135deg, rgba(237,231,245,.04) 0 1px, transparent 1px 13px),
+      linear-gradient(160deg, #241C3C 0%, #171129 60%, #1E1733 100%);
+  }
+  .story-panel.filled .story-ph{ display:none; }
+  .story-ph b{ font-family:"Bricolage Grotesque",sans-serif; font-weight:600; font-size:15px; color:var(--ink); }
+  .story-ph span{ font-size:11px; letter-spacing:.06em; text-transform:uppercase; opacity:.7; }
+
+  .story-scrim{
+    position:absolute; inset:0;
+    background:
+      linear-gradient(to top, rgba(0,0,0,.32) 0%, rgba(0,0,0,0) 30%),
+      linear-gradient(to bottom, rgba(0,0,0,.4) 0%, rgba(0,0,0,0) 22%);
+    pointer-events:none;
+  }
+
+  .story-eyebrow{
+    position:absolute; left:clamp(20px,4vw,56px); top:clamp(20px,4vh,44px);
+    display:flex; align-items:center; gap:10px;
+    color:var(--ink-soft);
+    font-size:11.5px; letter-spacing:.08em; text-transform:uppercase;
+    opacity:0; transform:translateY(-8px);
+    transition:opacity .6s ease .15s, transform .6s cubic-bezier(.2,.7,.2,1) .15s;
+  }
+  .story-panel.in .story-eyebrow{ opacity:1; transform:none; }
+  .story-eyebrow b{ color:var(--ink); font-weight:600; letter-spacing:.02em; text-transform:none; font-size:13px; }
+
+  .story-title{
+    /* visually hidden — kept for screen readers only, per-slide caption
+       no longer renders on screen */
+    position:absolute; width:1px; height:1px; overflow:hidden;
+    clip-path:inset(50%); white-space:nowrap;
+  }
+
+  .story-chip{
+    position:absolute; top:clamp(20px,4vh,44px); right:clamp(78px,9vw,116px);
+    display:inline-flex; align-items:center; gap:6px;
+    padding:8px 13px; border:0; border-radius:999px;
+    background:rgba(248,241,249,.12);
+    color:var(--paper);
+    font-family:"DM Sans",sans-serif; font-size:11px; font-weight:500;
+    letter-spacing:.04em; text-transform:uppercase; cursor:pointer;
+    opacity:0; transform:translateY(-6px);
+    backdrop-filter:blur(8px);
+    transition:opacity .35s ease, transform .35s ease, background .3s ease;
+  }
+  .story-panel.in .story-chip{ opacity:.85; transform:none; }
+  .story-chip:hover{ background:rgba(248,241,249,.24); opacity:1 !important; }
+
+  .story-panel.over .story-ph,
+  .story-panel.over .story-scrim{ outline:2px dashed var(--paper); outline-offset:-14px; }
+
+  .story-close{
+    position:fixed; top:clamp(18px,3vh,30px); right:clamp(18px,3vw,40px); z-index:76;
+    width:46px; height:46px; display:grid; place-items:center;
+    border-radius:50%; border:1.3px solid var(--line);
+    background:rgba(13,10,21,.55); color:var(--paper); cursor:pointer;
+    backdrop-filter:blur(10px);
+    transition:background .25s ease, transform .2s ease;
+  }
+  .story-close:hover{ background:rgba(237,231,245,.16); transform:rotate(90deg); }
+  .story-close:focus-visible{ outline:2px solid var(--paper); outline-offset:4px; }
+
+  .story-progress{
+    position:fixed; left:clamp(18px,3vw,40px); bottom:clamp(18px,3vh,30px); z-index:76;
+    display:flex; gap:6px;
+  }
+  .story-progress i{
+    width:22px; height:2px; border-radius:2px;
+    background:rgba(237,231,245,.24);
+    transition:background .3s ease;
+  }
+  .story-progress i.on{ background:var(--paper); }
+
+  .story-nav{
+    position:fixed; left:50%; bottom:clamp(18px,3vh,30px); z-index:76;
+    transform:translateX(-50%);
+    display:flex; flex-direction:row; gap:10px;
+  }
+  .story-nav-btn{
+    width:44px; height:44px; display:grid; place-items:center;
+    border-radius:50%; border:1.3px solid var(--line);
+    background:rgba(13,10,21,.55); color:var(--paper); cursor:pointer;
+    backdrop-filter:blur(10px);
+    transition:background .25s ease, transform .2s ease, opacity .25s ease;
+  }
+  .story-nav-btn:hover{ background:rgba(237,231,245,.16); }
+  .story-nav-btn:active{ transform:scale(.94); }
+  .story-nav-btn:focus-visible{ outline:2px solid var(--paper); outline-offset:4px; }
+  .story-nav-btn:disabled{ opacity:.28; cursor:default; pointer-events:none; }
+
+  /* ---------- Hotspot dot + info card ---------- */
+
+  .spot{
+    position:absolute; z-index:20;
+    width:13px; height:13px;
+    transform:translate(-50%,-50%);
+    border:0; border-radius:50%;
+    background:var(--tour);
+    box-shadow:0 0 0 3px rgba(13,10,21,.55);
+    cursor:pointer;
+    opacity:0;
+    transition:opacity .5s ease .35s, transform .2s ease, background .2s ease;
+  }
+  .story-panel.in .spot{ opacity:1; }
+  .story-panel:not(.in) .spot{ pointer-events:none; }
+  .spot:hover{ transform:translate(-50%,-50%) scale(1.15); }
+  .spot:focus-visible{ outline:2px solid var(--paper); outline-offset:6px; }
+  .spot.active{ background:var(--paper); }
+
+  .spot::after{
+    content:""; position:absolute; inset:-11px;
+    border-radius:50%; border:1.5px solid var(--tour);
+    opacity:.6;
+    animation:spot-pulse 2.4s ease-out infinite;
+  }
+  .spot.active::after{ animation-play-state:paused; opacity:0; }
+
+  @keyframes spot-pulse{
+    0%   { transform:scale(.55); opacity:.65; }
+    70%  { transform:scale(2); opacity:0; }
+    100% { transform:scale(2); opacity:0; }
+  }
+
+  .spot-card{
+    position:absolute; z-index:30;
+    left:0; top:0;
+    pointer-events:none;
+  }
+  .spot-card[data-pos="rb"]{ transform:translate(18px, 18px); }
+  .spot-card[data-pos="lb"]{ transform:translate(calc(-100% - 18px), 18px); }
+  .spot-card[data-pos="rt"]{ transform:translate(18px, calc(-100% - 18px)); }
+  .spot-card[data-pos="lt"]{ transform:translate(calc(-100% - 18px), calc(-100% - 18px)); }
+
+  .spot-card-inner{
+    width:min(320px, 78vw);
+    padding:18px 20px 20px;
+    border-radius:14px;
+    background:rgba(13,10,21,.88);
+    border:1px solid var(--line);
+    backdrop-filter:blur(16px);
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.75);
+    opacity:0; transform:scale(.95) translateY(4px);
+    transition:opacity .22s ease, transform .22s cubic-bezier(.2,.7,.2,1);
+    pointer-events:none;
+  }
+  .spot-card.open .spot-card-inner{
+    opacity:1; transform:none; pointer-events:auto;
+  }
+
+  .spot-close{
+    position:absolute; top:12px; right:12px;
+    width:22px; height:22px; display:grid; place-items:center;
+    border:0; border-radius:50%; background:none;
+    color:var(--ink-soft); cursor:pointer;
+    transition:background .2s ease, color .2s ease;
+  }
+  .spot-close:hover{ background:rgba(237,231,245,.12); color:var(--paper); }
+
+  .spot-kind{
+    font-size:10.5px; font-weight:600; letter-spacing:.07em; text-transform:uppercase;
+    color:var(--tour-hi);
+    margin:0 0 8px; padding-right:26px;
+  }
+  .spot-kind span{ color:var(--ink-soft); font-weight:400; }
+
+  .spot-headline{
+    margin:0 0 8px; padding-right:12px;
+    font-family:"Bricolage Grotesque",sans-serif;
+    font-weight:600; font-size:17px; line-height:1.28; letter-spacing:-0.01em;
+    color:var(--paper);
+  }
+  .spot-body{
+    margin:0 0 14px;
+    font-size:13px; line-height:1.55; color:var(--ink-soft);
+  }
+  .spot-stat{
+    margin:0 0 14px; padding:9px 12px;
+    border-radius:8px; background:rgba(200,107,54,.14);
+    font-size:12.5px; font-weight:600; color:var(--paper);
+  }
+  .spot-tags{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; }
+  .spot-tags span{
+    padding:5px 10px; border-radius:999px;
+    background:rgba(237,231,245,.08);
+    font-size:10.5px; letter-spacing:.02em; color:var(--ink-soft);
+  }
+
+  .spot-cta{
+    display:inline-flex; align-items:center; gap:7px;
+    padding:9px 15px; border:0; border-radius:999px;
+    background:var(--tour); color:#FBF0E8;
+    font-family:"Bricolage Grotesque",sans-serif; font-weight:600; font-size:12.5px;
+    letter-spacing:-0.01em; cursor:pointer;
+    transition:background .25s ease, transform .2s ease;
+  }
+  .spot-cta:hover{ background:var(--tour-hi); transform:translateY(-1px); }
+
+  @media (prefers-reduced-motion: reduce){
+    .spot::after{ animation:none !important; opacity:.6; }
+  }
+
+  @media (max-width:640px){
+    .story-eyebrow{ font-size:10.5px; }
+  }
+
+  /* ---------- size panel (dev tool — delete this block to ship) ---------- */
+
+  .sizer-open{
+    position:fixed; right:18px; bottom:18px; z-index:50;
+    width:42px; height:42px; display:grid; place-items:center;
+    border-radius:50%; border:1.3px solid var(--line);
+    background:rgba(13,10,21,.8); color:var(--ink); cursor:pointer;
+    backdrop-filter:blur(8px);
+    font-size:15px; opacity:.5; transition:opacity .25s ease;
+  }
+  .sizer-open:hover{ opacity:1; }
+
+  .sizer{
+    position:fixed; right:18px; bottom:18px; z-index:51;
+    width:268px; padding:16px 18px 14px;
+    border-radius:12px;
+    background:rgba(18,13,30,.95);
+    border:1px solid var(--line);
+    color:var(--paper);
+    backdrop-filter:blur(14px);
+    box-shadow:0 24px 60px -20px rgba(0,0,0,.85);
+    display:none;
+  }
+  .sizer.on{ display:block; }
+
+  .sizer h2{
+    margin:0 0 14px;
+    font-family:"Bricolage Grotesque",sans-serif;
+    font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .sizer h2 button{
+    border:0; background:none; color:var(--paper);
+    font-size:16px; line-height:1; cursor:pointer; opacity:.6; padding:0;
+  }
+  .sizer h2 button:hover{ opacity:1; }
+
+  .row{ margin-bottom:12px; }
+  .row label{
+    display:flex; justify-content:space-between;
+    font-size:11px; letter-spacing:.04em; margin-bottom:6px; opacity:.78;
+  }
+  .row label b{ font-weight:500; font-variant-numeric:tabular-nums; opacity:1; }
+
+  .row input[type=range]{
+    width:100%; height:3px; margin:0;
+    -webkit-appearance:none; appearance:none;
+    background:rgba(248,241,249,.25); border-radius:2px; outline:none;
+  }
+  .row input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none;
+    width:13px; height:13px; border-radius:50%;
+    background:var(--paper); cursor:pointer;
+  }
+  .row input[type=range]::-moz-range-thumb{
+    width:13px; height:13px; border:0; border-radius:50%;
+    background:var(--paper); cursor:pointer;
+  }
+
+  .sizer pre{
+    margin:12px 0 0; padding:10px;
+    background:rgba(248,241,249,.08); border-radius:7px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:10px; line-height:1.65; white-space:pre-wrap;
+    opacity:.85; user-select:all;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition-duration:.01ms !important; }
+    .glow{ animation:none !important; }
+    .story-panel img, .story-panel video{ transform:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bgfx" aria-hidden="true">
+  <div class="glow g1"></div>
+  <div class="glow g2"></div>
+  <div class="glow g3"></div>
+  <div class="grid"></div>
+  <svg class="rings" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+    <circle cx="720" cy="1180" r="620"></circle>
+    <circle cx="720" cy="1180" r="790"></circle>
+    <circle cx="720" cy="1180" r="960"></circle>
+  </svg>
+  <div class="grain"></div>
+</div>
+
+<main class="stage">
+
+  <h1 class="eyebrow">Virtual Experience Center</h1>
+
+  <div class="cta">
+    <button class="tour" type="button">
+      <svg width="10.5" height="12" viewBox="0 0 14 16" fill="currentColor" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" aria-hidden="true">
+        <path d="M1.6 1.8 L12.4 8 L1.6 14.2 Z"/>
+      </svg>
+      Take the 60-second tour
+    </button>
+  </div>
+
+  <div class="viewport" id="viewport">
+    <div class="track" id="track"></div>
+  </div>
+
+  <div class="controls">
+    <button class="nav" id="prev" aria-label="Previous">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+    </button>
+    <button class="nav" id="next" aria-label="Next">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+  </div>
+
+  <p class="hint">Click a card to open its story &nbsp;·&nbsp; drop a photo or video to swap it &nbsp;·&nbsp; press S to resize the cards</p>
+</main>
+
+<button class="sizer-open" id="sizerOpen" aria-label="Adjust card sizes" title="Adjust sizes (S)">&#8596;</button>
+
+<aside class="sizer" id="sizer" aria-label="Card size controls">
+  <h2>Card size <button id="sizerClose" aria-label="Close">&times;</button></h2>
+
+  <div class="row">
+    <label for="s-w">Width <b><span id="v-w"></span>vw</b></label>
+    <input type="range" id="s-w" min="14" max="42" step="0.5">
+  </div>
+  <div class="row">
+    <label for="s-ar">Shape <b><span id="v-ar"></span></b></label>
+    <input type="range" id="s-ar" min="0.55" max="1.5" step="0.01">
+  </div>
+  <div class="row">
+    <label for="s-gap">Gap <b><span id="v-gap"></span>px</b></label>
+    <input type="range" id="s-gap" min="0" max="70" step="1">
+  </div>
+  <div class="row">
+    <label for="s-dip">Arc dip <b><span id="v-dip"></span>px</b></label>
+    <input type="range" id="s-dip" min="0" max="110" step="1">
+  </div>
+  <div class="row">
+    <label for="s-tilt">Tilt <b><span id="v-tilt"></span>&deg;</b></label>
+    <input type="range" id="s-tilt" min="0" max="16" step="0.5">
+  </div>
+
+  <pre id="v-css"></pre>
+</aside>
+
+<div class="story" id="story" aria-hidden="true">
+  <button class="story-close" id="storyClose" aria-label="Close">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+  <div class="story-progress" id="storyProgress"></div>
+  <div class="story-nav">
+    <button class="story-nav-btn" id="storyUp" aria-label="Previous slide">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15l7-7 7 7"/></svg>
+    </button>
+    <button class="story-nav-btn" id="storyDown" aria-label="Next slide">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l7 7 7-7"/></svg>
+    </button>
+  </div>
+  <div class="story-scroll" id="storyScroll">
+    <div class="story-track" id="storyTrack"></div>
+  </div>
+</div>
+
+<input type="file" id="picker" accept="image/*,video/*" hidden>
+
+<script>
+(() => {
+  "use strict";
+
+  /* ---------- Content ---------- */
+  /* Each slide carries one hotspot: a screen position (x/y, % of the panel)
+     plus the content shown when it's opened. */
+  /* All media paths are relative to ASSET_BASE. Right now this points at a
+     local ./assets folder shipped alongside this file — host that folder
+     anywhere (your own server, S3, Cloudflare R2, Netlify, etc.) and switch
+     this one line to that host's URL, e.g. "https://cdn.yoursite.com/". */
+  const ASSET_BASE = "assets/";
+
+  const SECTORS = [
+    {
+      key:"manufacturing", label:"Explore Manufacturing", src:ASSET_BASE+"cards/manufacturing.png", type:"image",
+      story:[
+        { title:"The Plant Floor", src:null, type:null, spot:{
+          x:64, y:34, kind:"Use case", cat:"Production Visibility",
+          headline:"Line status at a glance",
+          body:"Live dashboards surface throughput, downtime, and quality flags the moment they happen on the floor.",
+          tags:["Live dashboards","Downtime alerts"], stat:null, cta:"Book a demo" } },
+        { title:"Precision Assembly", src:null, type:null, spot:{
+          x:28, y:60, kind:"Use case", cat:"Guided Assembly",
+          headline:"Instructions that catch mistakes first",
+          body:"Step-by-step visual guidance at each station cuts assembly errors and shortens new-hire ramp time.",
+          tags:["Work instructions","Error-proofing"], stat:null, cta:"Book a demo" } },
+        { title:"Quality Control", src:null, type:null, spot:{
+          x:70, y:58, kind:"Use case", cat:"Inspection",
+          headline:"Catch defects before they ship",
+          body:"Vision-assisted inspection flags defects at the station, before the part reaches the next line.",
+          tags:["Vision inspection","Defect tracking"], stat:null, cta:"Book a demo" } },
+        { title:"Automation & Robotics", src:null, type:null, spot:{
+          x:42, y:32, kind:"Use case", cat:"Fleet Monitoring",
+          headline:"Every robotic cell, one screen",
+          body:"Fleet health and cycle times for the whole line, streamed live so a stall gets caught in seconds.",
+          tags:["Fleet health","Cycle-time tracking"], stat:null, cta:"Book a demo" } },
+        { title:"A Manufacturing Story", src:null, type:null, spot:{
+          x:56, y:50, kind:"Case study", cat:"Multi-Shift Rollout",
+          headline:"Cutting changeover time by 40%",
+          body:"How a three-shift plant standardized changeovers across twelve lines using floor displays alone.",
+          tags:["Changeover SOPs","3 shifts"], stat:"40% faster changeovers · 12 lines", cta:"Book a demo" } },
+      ],
+    },
+    {
+      key:"retail", label:"Explore Retail", src:ASSET_BASE+"cards/retail.png", type:"image",
+      story:[
+        { title:"The Store Experience", src:ASSET_BASE+"story/retail/1.webm", type:"video", spot:{
+          x:66, y:36, kind:"Use case", cat:"Window Advertising",
+          headline:"One screen, every storefront",
+          body:"Push a new campaign to every store's window display at once — no reprinting, no shipping.",
+          tags:["Instant publishing","Multi-location"], stat:null, cta:"Book a demo" } },
+        { title:"Digital Signage", src:ASSET_BASE+"story/retail/2.webm", type:"video", spot:{
+          x:30, y:58, kind:"Use case", cat:"Scheduled Campaigns",
+          headline:"Content that reacts to the day",
+          body:"Schedule promotions by daypart, weather, or stock level, so the message always fits the moment.",
+          tags:["Dayparting","Auto-scheduling"], stat:null, cta:"Book a demo" } },
+        { title:"The Customer Journey", src:ASSET_BASE+"story/retail/3.webm", type:"video", spot:{
+          x:72, y:62, kind:"Use case", cat:"Journey Mapping",
+          headline:"From the window to the till",
+          body:"Connect what shoppers see outside to what greets them at checkout, without a separate system.",
+          tags:["Journey mapping","In-store cues"], stat:null, cta:"Book a demo" } },
+        { title:"Inventory Intelligence", src:ASSET_BASE+"story/retail/4.webm", type:"video", spot:{
+          x:40, y:30, kind:"Use case", cat:"Live Inventory",
+          headline:"Never promote an empty shelf",
+          body:"Displays pull live stock data, so a featured item swaps out the moment it sells through.",
+          tags:["Live inventory sync","Auto-swap creative"], stat:null, cta:"Book a demo" } },
+        { title:"A Retail Story", src:null, type:null, spot:{
+          x:58, y:48, kind:"Case study", cat:"Seasonal Rollout",
+          headline:"850 screens, one launch",
+          body:"How a fashion chain rolled a seasonal campaign out to every mall location in under a week.",
+          tags:["Multi-location publishing","Campaign scheduling"], stat:"850+ screens · 400+ malls", cta:"Book a demo" } },
+      ],
+    },
+    {
+      key:"qsr", label:"Explore QSR", src:ASSET_BASE+"cards/qsr.png", type:"image",
+      story:[
+        { title:"The Drive-Thru", src:null, type:null, spot:{
+          x:60, y:34, kind:"Use case", cat:"Daypart Menus",
+          headline:"Menus that flex with demand",
+          body:"Swap combos and pricing by daypart automatically, without anyone touching a board by hand.",
+          tags:["Daypart menus","Remote pricing"], stat:null, cta:"Book a demo" } },
+        { title:"Kitchen Display Systems", src:null, type:null, spot:{
+          x:32, y:56, kind:"Use case", cat:"Order Sequencing",
+          headline:"Tickets, timed and tracked",
+          body:"Kitchen screens sequence orders as they fire and flag any ticket running behind.",
+          tags:["Order sequencing","SLA alerts"], stat:null, cta:"Book a demo" } },
+        { title:"The Menu Board", src:null, type:null, spot:{
+          x:68, y:60, kind:"Use case", cat:"Dynamic Upsell",
+          headline:"Upsell exactly when it lands",
+          body:"Highlight combos and limited-time offers the moment order volume says they'll convert.",
+          tags:["Dynamic upsell","LTO scheduling"], stat:null, cta:"Book a demo" } },
+        { title:"Order Kiosks", src:null, type:null, spot:{
+          x:44, y:30, kind:"Use case", cat:"Guided Ordering",
+          headline:"Faster taps, fewer mistakes",
+          body:"Guided ordering flows cut mis-orders and keep the line moving through peak hours.",
+          tags:["Guided flows","Peak-hour tuning"], stat:null, cta:"Book a demo" } },
+        { title:"A QSR Story", src:null, type:null, spot:{
+          x:54, y:50, kind:"Case study", cat:"Chain-Wide Rollout",
+          headline:"12 seconds off every order",
+          body:"How a 200-location chain trimmed average order time with a kiosk and menu-board redesign.",
+          tags:["200+ locations","Kiosk redesign"], stat:"–12 sec avg. order time", cta:"Book a demo" } },
+      ],
+    },
+    {
+      key:"corporate", label:"Explore Corporate", src:ASSET_BASE+"cards/corporate.png", type:"image",
+      story:[
+        { title:"The Lobby Experience", src:null, type:null, spot:{
+          x:62, y:36, kind:"Use case", cat:"Visitor Welcome",
+          headline:"A lobby that greets by name",
+          body:"Visitor check-in syncs straight to the lobby display for a welcome that feels personal.",
+          tags:["Visitor sync","Brand moments"], stat:null, cta:"Book a demo" } },
+        { title:"Meeting Spaces", src:null, type:null, spot:{
+          x:30, y:58, kind:"Use case", cat:"Room Status",
+          headline:"Never walk into a booked room",
+          body:"Live room status outside every door, synced to the calendar in real time.",
+          tags:["Calendar sync","Room status"], stat:null, cta:"Book a demo" } },
+        { title:"Wayfinding", src:null, type:null, spot:{
+          x:70, y:60, kind:"Use case", cat:"Interactive Directory",
+          headline:"Finding your way, faster",
+          body:"Interactive directories cut the time new visitors spend wandering the halls.",
+          tags:["Interactive maps","Multi-floor"], stat:null, cta:"Book a demo" } },
+        { title:"The Employee Hub", src:null, type:null, spot:{
+          x:42, y:32, kind:"Use case", cat:"Company News",
+          headline:"News that reaches every floor",
+          body:"Company updates land on every floor screen at once — no inbox required.",
+          tags:["Company news","All-floor reach"], stat:null, cta:"Book a demo" } },
+        { title:"A Corporate Story", src:null, type:null, spot:{
+          x:56, y:48, kind:"Case study", cat:"HQ Rollout",
+          headline:"From 40 emails to one screen",
+          body:"How one headquarters replaced its all-staff email blasts with a single always-on hub.",
+          tags:["12 floors","2,200 employees"], stat:"1 screen replaced ~40 emails/mo", cta:"Book a demo" } },
+      ],
+    },
+  ];
+
+  const viewport = document.getElementById("viewport");
+  const track    = document.getElementById("track");
+  const picker   = document.getElementById("picker");
+  const reduced  = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  let cards = [], setWidth = 0, offset = 0, target = null;
+  const arc = { dip: 46, tilt: 7 };            // driven by the size panel
+  let speed = reduced ? 0 : 42;          // px per second, leftward
+  let pointerDown = false;
+
+  /* ---------- Build ---------- */
+
+  function mediaTagHTML(s, extraAttrs){
+    if (!s.src) return "";
+    if (s.type === "video"){
+      return `<video src="${s.src}" ${extraAttrs || ""} autoplay muted loop playsinline></video>`;
+    }
+    return `<img src="${s.src}" alt="" ${extraAttrs || ""}>`;
+  }
+
+  function cardHTML(i){
+    const s = SECTORS[i];
+    return `
+      <figure class="card${s.src ? " filled" : ""}" data-i="${i}" tabindex="0"
+              role="button" aria-label="${s.label}. Click to open the story, or drop a photo or video to replace it.">
+        <div class="frame">
+          ${mediaTagHTML(s)}
+          <div class="ph">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M21 16l-5-5-6 6-3-3-4 4"/>
+            </svg>
+            <b>${s.label.replace("Explore ","")}</b>
+            <span>Drop a photo or video</span>
+          </div>
+          <div class="veil"></div>
+          <button class="chip" data-act="replace" type="button" aria-label="Replace this card's media">Replace</button>
+          <figcaption class="label"><b>${s.label}</b><i>&#8594;</i></figcaption>
+        </div>
+      </figure>`;
+  }
+
+  function build(){
+    const one = SECTORS.map((_, i) => cardHTML(i)).join("");
+    // enough copies to always cover the viewport plus a spare set
+    const probe = document.createElement("div");
+    probe.innerHTML = one;
+    track.innerHTML = one;
+    const first = track.querySelector(".card");
+    const unit  = first.getBoundingClientRect().width +
+                  parseFloat(getComputedStyle(track).gap || 0);
+    const sets  = Math.max(3, Math.ceil(innerWidth / (unit * SECTORS.length)) + 2);
+    track.innerHTML = one.repeat(sets);
+
+    cards = [...track.querySelectorAll(".card")];
+    setWidth = unit * SECTORS.length;
+    offset = ((offset % setWidth) + setWidth) % setWidth - setWidth;
+  }
+
+  /* ---------- The arch ---------- */
+
+  function shape(){
+    const trackLeft = track.getBoundingClientRect().left;
+    const mid  = innerWidth / 2;
+    const span = mid + (cards[0]?.offsetWidth || 0) / 2;
+    const depth = arc.dip;                             // how far the centre dips
+    const tilt  = arc.tilt;                            // max degrees at the edges
+
+    for (const c of cards){
+      const cx = trackLeft + c.offsetLeft + c.offsetWidth / 2;
+      const t  = Math.max(-1.35, Math.min(1.35, (cx - mid) / span));
+      const y  = depth * (1 - t * t);                  // valley: centre sits lowest
+      const r  = -tilt * t;                            // tangent of that valley
+      const s  = 1 - 0.055 * Math.abs(t);
+      c.style.transform = `translateY(${y.toFixed(2)}px) rotate(${r.toFixed(2)}deg) scale(${s.toFixed(3)})`;
+      c.style.zIndex = String(100 - Math.round(Math.abs(t) * 50));
+    }
+  }
+
+  /* ---------- Motion ---------- */
+
+  let last = performance.now();
+
+  function frame(now){
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+
+    if (target !== null){
+      offset += (target - offset) * Math.min(1, dt * 7);
+      if (Math.abs(target - offset) < 0.5){ offset = target; target = null; }
+    } else if (!pointerDown){          // the loop never stops — hover included
+      offset -= speed * dt;
+    }
+
+    if (setWidth){
+      while (offset <= -setWidth * 2){ offset += setWidth; if (target !== null) target += setWidth; }
+      while (offset > -setWidth)     { offset -= setWidth; if (target !== null) target -= setWidth; }
+    }
+
+    track.style.transform = `translateX(${offset.toFixed(2)}px)`;
+    shape();
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- Interaction ---------- */
+
+  const step = () => (cards[0]?.offsetWidth || 300) + parseFloat(getComputedStyle(track).gap || 0);
+  document.getElementById("next").addEventListener("click", () => { target = (target ?? offset) - step(); });
+  document.getElementById("prev").addEventListener("click", () => { target = (target ?? offset) + step(); });
+
+  /* drag to scrub */
+  /* Pointer capture is deferred until real movement is detected. Capturing
+     on every mousedown (even a plain tap) retargets the resulting native
+     "click" event to `viewport` instead of the element under the cursor,
+     which silently breaks click-to-open-story and click-to-replace. */
+  let startX = 0, startOff = 0, moved = 0, captured = false, capturedId = null;
+  const DRAG_THRESHOLD = 4;
+
+  viewport.addEventListener("pointerdown", e => {
+    if (e.button !== 0) return;
+    pointerDown = true; moved = 0; captured = false;
+    startX = e.clientX; startOff = offset; target = null;
+  });
+
+  viewport.addEventListener("pointermove", e => {
+    if (!pointerDown) return;
+    const dx = e.clientX - startX;
+    moved = Math.max(moved, Math.abs(dx));
+    if (!captured && moved > DRAG_THRESHOLD){
+      captured = true;
+      capturedId = e.pointerId;
+      viewport.classList.add("dragging");
+      try { viewport.setPointerCapture(e.pointerId); } catch {}
+    }
+    if (captured) offset = startOff + dx;
+  });
+
+  const release = () => {
+    if (!pointerDown) return;
+    pointerDown = false;
+    if (captured){
+      viewport.classList.remove("dragging");
+      try { viewport.releasePointerCapture(capturedId); } catch {}
+    }
+    captured = false;
+  };
+  viewport.addEventListener("pointerup", release);
+  viewport.addEventListener("pointercancel", release);
+
+  /* ---------- Photo replacement ---------- */
+  /* `pending` targets either a carousel card or one panel inside an open story */
+
+  let pending = null;
+
+  function openPicker(target){ pending = target; picker.value = ""; picker.click(); }
+
+  function buildMediaEl(type, url){
+    if (type === "video"){
+      const v = document.createElement("video");
+      v.src = url;
+      v.autoplay = true;
+      v.loop = true;
+      v.muted = true;
+      v.setAttribute("muted", "");     // attribute form: some browsers gate autoplay on this
+      v.playsInline = true;
+      v.setAttribute("playsinline", "");
+      return v;
+    }
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = "";
+    return img;
+  }
+
+  function setCardMedia(i, url, type){
+    const prev = SECTORS[i].src;
+    SECTORS[i].src = url;
+    SECTORS[i].type = type;
+    for (const c of cards){
+      if (Number(c.dataset.i) !== i) continue;
+      const frame = c.querySelector(".frame");
+      const old = frame.querySelector("img, video");
+      if (old) old.remove();
+      frame.prepend(buildMediaEl(type, url));
+      c.classList.add("filled");
+    }
+    if (prev && prev.startsWith("blob:") && prev !== url) URL.revokeObjectURL(prev);
+  }
+
+  function setStoryMedia(sector, slide, url, type){
+    const prev = SECTORS[sector].story[slide].src;
+    SECTORS[sector].story[slide].src = url;
+    SECTORS[sector].story[slide].type = type;
+    if (Number(storyTrack.dataset.sector) === sector){
+      const panel = storyPanels[slide];
+      if (panel){
+        const old = panel.querySelector("img, video");
+        if (old) old.remove();
+        panel.insertBefore(buildMediaEl(type, url), panel.firstChild);
+        panel.classList.add("filled", "in");   // show immediately, no fade-wait
+      }
+    }
+    if (prev && prev.startsWith("blob:") && prev !== url) URL.revokeObjectURL(prev);
+  }
+
+  function readFile(file, target){
+    if (!file) return;
+    const isImage = file.type.startsWith("image/");
+    const isVideo = file.type.startsWith("video/");
+    if (!isImage && !isVideo) return;
+    const url  = URL.createObjectURL(file);
+    const type = isImage ? "image" : "video";
+    if (target.kind === "card") setCardMedia(target.i, url, type);
+    else                         setStoryMedia(target.sector, target.slide, url, type);
+  }
+
+  picker.addEventListener("change", () => {
+    if (!pending) return;
+    readFile(picker.files[0], pending);
+    pending = null;
+  });
+
+  track.addEventListener("click", e => {
+    if (moved > 6) return;                     // that was a drag, not a click
+    const card = e.target.closest(".card");
+    if (!card) return;
+    const i = Number(card.dataset.i);
+    if (e.target.closest(".chip")){
+      e.stopPropagation();
+      openPicker({ kind:"card", i });
+    } else {
+      openStory(i);
+    }
+  });
+
+  track.addEventListener("keydown", e => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const card = e.target.closest(".card");
+    if (!card) return;
+    e.preventDefault();
+    openStory(Number(card.dataset.i));
+  });
+
+  /* drag & drop */
+  ["dragenter","dragover"].forEach(t =>
+    track.addEventListener(t, e => {
+      const card = e.target.closest(".card");
+      if (!card) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
+      card.classList.add("over");
+    })
+  );
+
+  track.addEventListener("dragleave", e => {
+    const card = e.target.closest(".card");
+    if (card && !card.contains(e.relatedTarget)) card.classList.remove("over");
+  });
+
+  track.addEventListener("drop", e => {
+    const card = e.target.closest(".card");
+    if (!card) return;
+    e.preventDefault();
+    card.classList.remove("over");
+    readFile(e.dataTransfer.files[0], { kind:"card", i:Number(card.dataset.i) });
+  });
+
+  // don't let a stray drop elsewhere navigate the page away
+  ["dragover","drop"].forEach(t =>
+    document.addEventListener(t, e => {
+      if (!e.target.closest(".card, .story-panel")) e.preventDefault();
+    })
+  );
+
+  /* ---------- Story overlay ---------- */
+
+  const storyEl       = document.getElementById("story");
+  const storyScrollEl  = document.getElementById("storyScroll");
+  const storyTrack     = document.getElementById("storyTrack");
+  const storyProgress  = document.getElementById("storyProgress");
+  const storyCloseBtn  = document.getElementById("storyClose");
+  const storyUpBtn     = document.getElementById("storyUp");
+  const storyDownBtn   = document.getElementById("storyDown");
+
+  let storyPanels = [];
+  let storyObserver = null;
+  let storyOpen = false;
+  let storyReturnFocus = null;
+  let storyIndex = 0;
+
+  function spotQuadrant(x, y){
+    return (x > 55 ? "l" : "r") + (y > 55 ? "t" : "b");
+  }
+
+  function spotCardHTML(spot){
+    const pos = spotQuadrant(spot.x, spot.y);
+    return `
+      <div class="spot-card" data-pos="${pos}" style="left:${spot.x}%; top:${spot.y}%;">
+        <div class="spot-card-inner" aria-hidden="true">
+          <button class="spot-close" type="button" aria-label="Close">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+          <p class="spot-kind">${spot.kind}<span> · ${spot.cat}</span></p>
+          <h3 class="spot-headline">${spot.headline}</h3>
+          <p class="spot-body">${spot.body}</p>
+          ${spot.stat ? `<div class="spot-stat">${spot.stat}</div>` : ""}
+          <div class="spot-tags">${spot.tags.map(t => `<span>${t}</span>`).join("")}</div>
+          <button class="spot-cta" type="button">${spot.cta} <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </div>
+      </div>`;
+  }
+
+  function panelHTML(sector, slide, s){
+    const eyebrowLabel = SECTORS[sector].label.replace("Explore ", "");
+    return `
+      <section class="story-panel${s.src ? " filled" : ""}"
+               data-sector="${sector}" data-slide="${slide}" tabindex="-1">
+        ${mediaTagHTML(s)}
+        <div class="story-ph">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M21 16l-5-5-6 6-3-3-4 4"/>
+          </svg>
+          <b>${s.title}</b>
+          <span>Drop a photo or video</span>
+        </div>
+        <div class="story-scrim"></div>
+        <div class="story-eyebrow"><b>${eyebrowLabel}</b>&nbsp;·&nbsp;${String(slide + 1).padStart(2,"0")} / ${SECTORS[sector].story.length}</div>
+        <button class="story-chip" type="button">Replace</button>
+        <h2 class="story-title">${s.title}</h2>
+        <button class="spot" type="button" style="left:${s.spot.x}%; top:${s.spot.y}%;" aria-label="${s.spot.headline}"></button>
+        ${spotCardHTML(s.spot)}
+      </section>`;
+  }
+
+  function closeSpot(panel){
+    const card = panel.querySelector(".spot-card.open");
+    if (!card) return;
+    card.classList.remove("open");
+    card.querySelector(".spot-card-inner").setAttribute("aria-hidden", "true");
+    const dot = panel.querySelector(".spot.active");
+    if (dot) dot.classList.remove("active");
+  }
+
+  function toggleSpot(panel, dot){
+    const card = panel.querySelector(".spot-card");
+    const wasOpen = card.classList.contains("open");
+    closeSpot(panel);
+    if (wasOpen) return;   // it was open — this click just closed it
+    card.classList.add("open");
+    dot.classList.add("active");
+    card.querySelector(".spot-card-inner").setAttribute("aria-hidden", "false");
+    const closeBtn = card.querySelector(".spot-close");
+    if (closeBtn) closeBtn.focus();
+  }
+
+  function anySpotOpen(){
+    return storyOpen && !!storyTrack.querySelector(".spot-card.open");
+  }
+
+  function updateStoryNav(){
+    storyUpBtn.disabled   = storyIndex <= 0;
+    storyDownBtn.disabled = storyIndex >= storyPanels.length - 1;
+  }
+
+  function goToSlide(idx){
+    idx = Math.max(0, Math.min(storyPanels.length - 1, idx));
+    storyScrollEl.scrollTo({ top: idx * storyScrollEl.clientHeight, behavior: reduced ? "auto" : "smooth" });
+    // update immediately rather than waiting on the scroll/observer to settle,
+    // so back-to-back clicks don't read a stale mid-animation position
+    storyIndex = idx;
+    updateStoryNav();
+    [...storyProgress.children].forEach((d, i) => d.classList.toggle("on", i === idx));
+  }
+
+  function openStory(sectorIndex){
+    storyReturnFocus = document.activeElement;
+    const stories = SECTORS[sectorIndex].story;
+
+    storyTrack.dataset.sector = sectorIndex;
+    storyTrack.innerHTML = stories.map((s, i) => panelHTML(sectorIndex, i, s)).join("");
+    storyPanels = [...storyTrack.querySelectorAll(".story-panel")];
+
+    storyProgress.innerHTML = stories.map(() => `<i></i>`).join("");
+    const dots = [...storyProgress.children];
+
+    if (storyObserver) storyObserver.disconnect();
+    storyObserver = new IntersectionObserver((entries) => {
+      for (const entry of entries){
+        entry.target.classList.toggle("in", entry.isIntersecting);
+        if (entry.isIntersecting){
+          const idx = Number(entry.target.dataset.slide);
+          dots.forEach((d, i) => d.classList.toggle("on", i === idx));
+          storyIndex = idx;
+          updateStoryNav();
+        }
+      }
+    }, { root: storyScrollEl, threshold: 0.6 });
+    storyPanels.forEach(p => storyObserver.observe(p));
+
+    storyScrollEl.scrollTop = 0;
+    storyIndex = 0;
+    updateStoryNav();
+    storyEl.classList.add("on");
+    storyEl.setAttribute("aria-hidden", "false");
+    document.documentElement.style.overflow = "hidden";
+    storyOpen = true;
+    storyCloseBtn.focus();
+  }
+
+  function closeStory(){
+    storyEl.classList.remove("on");
+    storyEl.setAttribute("aria-hidden", "true");
+    document.documentElement.style.overflow = "";
+    storyOpen = false;
+    if (storyObserver) storyObserver.disconnect();
+    if (storyReturnFocus && document.contains(storyReturnFocus)) storyReturnFocus.focus();
+  }
+
+  storyCloseBtn.addEventListener("click", closeStory);
+  storyUpBtn.addEventListener("click", () => goToSlide(storyIndex - 1));
+  storyDownBtn.addEventListener("click", () => goToSlide(storyIndex + 1));
+
+  // sticky panels stay geometrically "intersecting" even once a later panel
+  // visually covers them, so IntersectionObserver can't tell us when a
+  // hotspot card should disappear — a plain scroll is the reliable signal.
+  storyScrollEl.addEventListener("scroll", () => {
+    const open = storyTrack.querySelector(".spot-card.open");
+    if (open) closeSpot(open.closest(".story-panel"));
+  }, { passive:true });
+
+  storyTrack.addEventListener("click", e => {
+    const panel = e.target.closest(".story-panel");
+    if (!panel) return;
+    const sector = Number(panel.dataset.sector), slide = Number(panel.dataset.slide);
+
+    const dot = e.target.closest(".spot");
+    if (dot){ e.stopPropagation(); toggleSpot(panel, dot); return; }
+
+    if (e.target.closest(".spot-close")){ e.stopPropagation(); closeSpot(panel); return; }
+
+    if (e.target.closest(".spot-card")) return;   // clicks inside the open card (e.g. the CTA) do nothing yet
+
+    if (e.target.closest(".story-chip")){ openPicker({ kind:"story", sector, slide }); return; }
+
+    closeSpot(panel);   // clicked the media itself — dismiss any open hotspot card
+  });
+
+  ["dragenter","dragover"].forEach(t =>
+    storyTrack.addEventListener(t, e => {
+      const panel = e.target.closest(".story-panel");
+      if (!panel) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
+      panel.classList.add("over");
+    })
+  );
+  storyTrack.addEventListener("dragleave", e => {
+    const panel = e.target.closest(".story-panel");
+    if (panel && !panel.contains(e.relatedTarget)) panel.classList.remove("over");
+  });
+  storyTrack.addEventListener("drop", e => {
+    const panel = e.target.closest(".story-panel");
+    if (!panel) return;
+    e.preventDefault();
+    panel.classList.remove("over");
+    const sector = Number(panel.dataset.sector), slide = Number(panel.dataset.slide);
+    readFile(e.dataTransfer.files[0], { kind:"story", sector, slide });
+  });
+
+  /* ---------- Size panel ---------- */
+
+  const panel = document.getElementById("sizer");
+  const css   = getComputedStyle(document.documentElement);
+  const S     = id => document.getElementById(id);
+
+  const ctl = {
+    w:    { el:S("s-w"),    out:S("v-w"),    val: parseFloat(css.getPropertyValue("--card-vw")) },
+    ar:   { el:S("s-ar"),   out:S("v-ar"),   val: parseFloat(css.getPropertyValue("--card-ar")) },
+    gap:  { el:S("s-gap"),  out:S("v-gap"),  val: parseFloat(css.getPropertyValue("--gap")) },
+    dip:  { el:S("s-dip"),  out:S("v-dip"),  val: arc.dip },
+    tilt: { el:S("s-tilt"), out:S("v-tilt"), val: arc.tilt },
+  };
+
+  function apply(rebuild){
+    const r = document.documentElement.style;
+    r.setProperty("--card-vw", ctl.w.val + "vw");
+    r.setProperty("--card-ar", ctl.ar.val);
+    r.setProperty("--gap",     ctl.gap.val + "px");
+    arc.dip  = ctl.dip.val;
+    arc.tilt = ctl.tilt.val;
+
+    for (const k in ctl) ctl[k].out.textContent = ctl[k].val;
+
+    S("v-css").textContent =
+      `--card-vw: ${ctl.w.val}vw;\n` +
+      `--card-ar: ${ctl.ar.val};\n` +
+      `--gap:     ${ctl.gap.val}px;\n` +
+      `arc.dip  = ${ctl.dip.val};\n` +
+      `arc.tilt = ${ctl.tilt.val};`;
+
+    if (rebuild) build();
+  }
+
+  for (const k in ctl){
+    const c = ctl[k];
+    c.el.value = c.val;
+    c.el.addEventListener("input", () => {
+      c.val = parseFloat(c.el.value);
+      apply(k === "w" || k === "ar" || k === "gap");   // geometry changes need a rebuild
+    });
+  }
+
+  const toggle = on => panel.classList.toggle("on", on);
+  S("sizerOpen").addEventListener("click", () => toggle(true));
+  S("sizerClose").addEventListener("click", () => toggle(false));
+  addEventListener("keydown", e => {
+    if (e.target.matches("input, textarea")) return;
+    if (e.key === "Escape" && anySpotOpen()){
+      const open = storyTrack.querySelector(".spot-card.open");
+      closeSpot(open.closest(".story-panel"));
+      return;
+    }
+    if (e.key === "Escape" && storyOpen){ closeStory(); return; }
+    if (storyOpen && e.key === "ArrowUp"){ e.preventDefault(); goToSlide(storyIndex - 1); return; }
+    if (storyOpen && e.key === "ArrowDown"){ e.preventDefault(); goToSlide(storyIndex + 1); return; }
+    if (e.key === "s" || e.key === "S") toggle(!panel.classList.contains("on"));
+    if (e.key === "Escape") toggle(false);
+  });
+
+  /* ---------- Boot ---------- */
+
+  let resizeTimer;
+  addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(build, 160);
+  });
+
+  apply(false);
+  build();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
