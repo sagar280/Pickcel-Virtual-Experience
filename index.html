@@ -353,6 +353,10 @@
     scrollbar-width:none;
   }
   .story-scroll::-webkit-scrollbar{ display:none; }
+  .story-scroll.resetting{
+    scroll-snap-type:none;
+    scroll-behavior:auto;
+  }
 
   .story-panel{
     position:sticky; top:0;
@@ -436,10 +440,10 @@
   .story-nav{
     position:fixed; left:50%; bottom:clamp(18px,3vh,30px); z-index:76;
     transform:translateX(-50%);
-    display:flex; flex-direction:row; gap:10px;
+    display:flex; flex-direction:row; gap:14px;
   }
   .story-nav-btn{
-    width:44px; height:44px; display:grid; place-items:center;
+    width:60px; height:60px; display:grid; place-items:center;
     border-radius:50%; border:1.3px solid var(--line);
     background:rgba(13,10,21,.55); color:var(--paper); cursor:pointer;
     backdrop-filter:blur(10px);
@@ -630,10 +634,10 @@
   <div class="story-progress" id="storyProgress"></div>
   <div class="story-nav">
     <button class="story-nav-btn" id="storyUp" aria-label="Previous slide">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15l7-7 7 7"/></svg>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15l7-7 7 7"/></svg>
     </button>
     <button class="story-nav-btn" id="storyDown" aria-label="Next slide">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l7 7 7-7"/></svg>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l7 7 7-7"/></svg>
     </button>
   </div>
   <div class="story-scroll" id="storyScroll">
@@ -780,10 +784,11 @@
   const viewport = document.getElementById("viewport");
   const track    = document.getElementById("track");
   const reduced  = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const touchFirst = matchMedia("(any-pointer: coarse)").matches;
 
   let cards = [], setWidth = 0, offset = 0, target = null;
   const arc = { dip: 46, tilt: 7 };
-  let speed = reduced ? 0 : 42;          // px per second, leftward
+  let speed = reduced || touchFirst ? 0 : 42; // keep touch targets stationary
   let pointerDown = false;
 
   /* ---------- Build ---------- */
@@ -889,13 +894,15 @@
      on every mousedown (even a plain tap) retargets the resulting native
      "click" event to `viewport` instead of the element under the cursor,
      which silently breaks click-to-open-story and click-to-replace. */
-  let startX = 0, startOff = 0, moved = 0, captured = false, activePointerId = null;
+  let startX = 0, startOff = 0, moved = 0, captured = false, activePointerId = null, tapSector = null;
   const DRAG_THRESHOLD = 10;
 
   viewport.addEventListener("pointerdown", e => {
     if (e.button !== 0 || !e.isPrimary || pointerDown) return;
     pointerDown = true; moved = 0; captured = false;
     activePointerId = e.pointerId;
+    tapSector = Number(e.target.closest(".card")?.dataset.i);
+    if (!Number.isFinite(tapSector)) tapSector = null;
     startX = e.clientX; startOff = offset; target = null;
   });
 
@@ -920,15 +927,18 @@
     }
     captured = false;
     activePointerId = null;
+    if (e.type === "pointercancel") tapSector = null;
   };
   viewport.addEventListener("pointerup", release);
   viewport.addEventListener("pointercancel", release);
 
   track.addEventListener("click", e => {
-    if (moved > DRAG_THRESHOLD) return;        // that was a drag, not a tap
+    if (moved > DRAG_THRESHOLD){ tapSector = null; return; } // that was a drag, not a tap
     const card = e.target.closest(".card");
     if (!card) return;
-    openStory(Number(card.dataset.i));
+    const sector = tapSector ?? Number(card.dataset.i);
+    tapSector = null;
+    openStory(sector);
   });
 
   track.addEventListener("keydown", e => {
@@ -950,7 +960,6 @@
   const storyDownBtn   = document.getElementById("storyDown");
 
   let storyPanels = [];
-  let storyObserver = null;
   let storyOpen = false;
   let storyReturnFocus = null;
   let storyIndex = 0;
@@ -1028,18 +1037,23 @@
     storyDownBtn.disabled = storyIndex >= storyPanels.length - 1;
   }
 
+  function setActiveStorySlide(idx){
+    idx = Math.max(0, Math.min(storyPanels.length - 1, idx));
+    storyIndex = idx;
+    storyPanels.forEach((panel, i) => panel.classList.toggle("in", i === idx));
+    [...storyProgress.children].forEach((dot, i) => dot.classList.toggle("on", i === idx));
+    updateStoryNav();
+  }
+
   function goToSlide(idx){
     idx = Math.max(0, Math.min(storyPanels.length - 1, idx));
+    setActiveStorySlide(idx);
     storyScrollEl.scrollTo({ top: idx * storyScrollEl.clientHeight, behavior: reduced ? "auto" : "smooth" });
-    // update immediately rather than waiting on the scroll/observer to settle,
-    // so back-to-back clicks don't read a stale mid-animation position
-    storyIndex = idx;
-    updateStoryNav();
-    [...storyProgress.children].forEach((d, i) => d.classList.toggle("on", i === idx));
   }
 
   function openStory(sectorIndex){
     storyReturnFocus = document.activeElement;
+    storyScrollEl.classList.add("resetting");
     const stories = SECTORS[sectorIndex].story
       .map((story, originalIndex) => ({ story, originalIndex }))
       .filter(item => item.story.src);
@@ -1057,52 +1071,46 @@
     storyPanels = [...storyTrack.querySelectorAll(".story-panel")];
 
     storyProgress.innerHTML = stories.map(() => `<i></i>`).join("");
-    const dots = [...storyProgress.children];
-
-    if (storyObserver) storyObserver.disconnect();
-    storyObserver = new IntersectionObserver((entries) => {
-      for (const entry of entries){
-        entry.target.classList.toggle("in", entry.isIntersecting);
-        if (entry.isIntersecting){
-          const idx = storyPanels.indexOf(entry.target);
-          if (idx < 0) continue;
-          dots.forEach((d, i) => d.classList.toggle("on", i === idx));
-          storyIndex = idx;
-          updateStoryNav();
-        }
-      }
-    }, { root: storyScrollEl, threshold: 0.6 });
-    storyPanels.forEach(p => storyObserver.observe(p));
-
-    storyScrollEl.scrollTop = 0;
-    storyIndex = 0;
-    updateStoryNav();
     storyEl.classList.add("on");
     storyEl.setAttribute("aria-hidden", "false");
     document.documentElement.style.overflow = "hidden";
     storyOpen = true;
+    storyScrollEl.scrollTop = 0;
+    setActiveStorySlide(0);
+    requestAnimationFrame(() => {
+      if (!storyOpen || Number(storyTrack.dataset.sector) !== sectorIndex) return;
+      storyScrollEl.scrollTop = 0;
+      requestAnimationFrame(() => {
+        if (!storyOpen || Number(storyTrack.dataset.sector) !== sectorIndex) return;
+        storyScrollEl.classList.remove("resetting");
+        storyScrollEl.scrollTop = 0;
+        setActiveStorySlide(0);
+      });
+    });
     storyCloseBtn.focus();
   }
 
   function closeStory(){
+    storyScrollEl.classList.add("resetting");
+    storyScrollEl.scrollTop = 0;
+    setActiveStorySlide(0);
     storyEl.classList.remove("on");
     storyEl.setAttribute("aria-hidden", "true");
     document.documentElement.style.overflow = "";
     storyOpen = false;
-    if (storyObserver) storyObserver.disconnect();
     if (storyReturnFocus && document.contains(storyReturnFocus)) storyReturnFocus.focus();
   }
 
   storyCloseBtn.addEventListener("click", closeStory);
   storyUpBtn.addEventListener("click", () => goToSlide(storyIndex - 1));
   storyDownBtn.addEventListener("click", () => goToSlide(storyIndex + 1));
+  document.querySelector(".tour").addEventListener("click", () => openStory(0));
 
-  // sticky panels stay geometrically "intersecting" even once a later panel
-  // visually covers them, so IntersectionObserver can't tell us when a
-  // hotspot card should disappear — a plain scroll is the reliable signal.
   storyScrollEl.addEventListener("scroll", () => {
     const open = storyTrack.querySelector(".spot-card.open");
     if (open) closeSpot(open.closest(".story-panel"));
+    if (!storyOpen || !storyScrollEl.clientHeight) return;
+    setActiveStorySlide(Math.round(storyScrollEl.scrollTop / storyScrollEl.clientHeight));
   }, { passive:true });
 
   storyTrack.addEventListener("click", e => {
