@@ -835,14 +835,16 @@
 
   function build(){
     const one = SECTORS.map((_, i) => cardHTML(i)).join("");
-    // enough copies to always cover the viewport plus a spare set
+    // Keep one complete set buffered on both sides of the visible viewport.
+    // The loop normalises offset between -2 sets and -1 set, so fewer than
+    // three copies can expose the end of the track on wide kiosk displays.
     const probe = document.createElement("div");
     probe.innerHTML = one;
     track.innerHTML = one;
     const first = track.querySelector(".card");
     const unit  = first.getBoundingClientRect().width +
                   parseFloat(getComputedStyle(track).gap || 0);
-    const sets  = Math.max(2, Math.ceil(innerWidth / (unit * SECTORS.length)) + 1);
+    const sets  = Math.max(3, Math.ceil(innerWidth / (unit * SECTORS.length)) + 2);
     track.innerHTML = one.repeat(sets);
 
     cards = [...track.querySelectorAll(".card")];
