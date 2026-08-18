@@ -525,6 +525,7 @@
   .spot-card[data-pos="lt"]{ transform:translate(calc(-100% - 18px), calc(-100% - 18px)); }
 
   .spot-card-inner{
+    position:relative;
     width:min(320px, 78vw);
     padding:18px 20px 20px;
     border-radius:14px;
@@ -538,6 +539,41 @@
   }
   .spot-card.open .spot-card-inner{
     opacity:1; transform:none; pointer-events:auto;
+  }
+
+  .spot-card.has-proof{
+    position:fixed;
+    left:50% !important; top:50% !important;
+    transform:translate(-50%,-50%) !important;
+  }
+  .spot-card.has-proof .spot-card-inner{
+    width:min(540px, calc(100vw - 32px));
+    max-height:calc(100svh - 32px);
+    overflow-y:auto;
+    padding:24px 26px 26px;
+    background:rgba(29,25,34,.95);
+    border-color:rgba(237,231,245,.3);
+  }
+  .spot-proof{
+    margin:15px 0 16px;
+    padding:14px 16px;
+    border:1px solid rgba(237,231,245,.24);
+    border-radius:12px;
+    background:rgba(237,231,245,.06);
+  }
+  .spot-proof-head{
+    display:flex; align-items:baseline; justify-content:space-between;
+    gap:14px; margin-bottom:7px;
+  }
+  .spot-proof-head strong{
+    font-family:"Bricolage Grotesque",sans-serif;
+    font-size:14px; color:var(--paper);
+  }
+  .spot-proof-head b{
+    font-size:12px; color:#ff7a32; text-align:right;
+  }
+  .spot-proof p{
+    margin:0; font-size:12.5px; line-height:1.45; color:var(--ink-soft);
   }
 
   .spot-close{
@@ -605,6 +641,13 @@
     .story-sector-link{ width:156px; height:48px; font-size:10.5px; }
     .story-nav-btn svg{ width:23px; height:23px; }
     .story-sector-link svg{ width:14px; height:14px; }
+  }
+
+  @media (max-height:560px){
+    .spot-card.has-proof .spot-card-inner{ padding:18px 20px 20px; }
+    .spot-card.has-proof .spot-body{ font-size:12.5px; line-height:1.45; margin-bottom:10px; }
+    .spot-card.has-proof .spot-tags{ margin-bottom:10px; }
+    .spot-card.has-proof .spot-proof{ margin:10px 0; padding:10px 12px; }
   }
 
   /* Touch kiosks: reduce continuous GPU effects and compositing cost. */
@@ -775,26 +818,38 @@
     {
       key:"qsr", label:"Explore QSR", src:ASSET_BASE+"cards/qsr.png", type:"image",
       story:[
-        { title:"The Drive-Thru", src:ASSET_BASE+"story/qsr/1.png", type:"image", spot:{
-          x:66, y:10, kind:"Use case", cat:"Daypart Menus",
-          headline:"Menus that flex with demand",
-          body:"Swap combos and pricing by daypart automatically, without anyone touching a board by hand.",
-          tags:["Daypart menus","Remote pricing"], stat:null, cta:"Book a demo" } },
-        { title:"Kitchen Display Systems", src:ASSET_BASE+"story/qsr/2.png", type:"image", spot:{
-          x:40, y:34, kind:"Use case", cat:"Order Sequencing",
-          headline:"Tickets, timed and tracked",
-          body:"Kitchen screens sequence orders as they fire and flag any ticket running behind.",
-          tags:["Order sequencing","SLA alerts"], stat:null, cta:"Book a demo" } },
-        { title:"The Menu Board", src:ASSET_BASE+"story/qsr/3.png", type:"image", spot:{
-          x:65, y:22, kind:"Use case", cat:"Dynamic Upsell",
-          headline:"Upsell exactly when it lands",
-          body:"Highlight combos and limited-time offers the moment order volume says they'll convert.",
-          tags:["Dynamic upsell","LTO scheduling"], stat:null, cta:"Book a demo" } },
-        { title:"Order Kiosks", src:ASSET_BASE+"story/qsr/4.png", type:"image", spot:{
-          x:79, y:38, kind:"Use case", cat:"Guided Ordering",
-          headline:"Faster taps, fewer mistakes",
-          body:"Guided ordering flows cut mis-orders and keep the line moving through peak hours.",
-          tags:["Guided flows","Peak-hour tuning"], stat:null, cta:"Book a demo" } },
+        { title:"Digital Menu Boards", src:ASSET_BASE+"story/qsr/1.png", type:"image", spot:{
+          x:66, y:10, kind:"Use case", cat:"Dynamic Menu Boards",
+          headline:"Menus that change with the moment",
+          body:"Update pricing, combos and limited-time offers across every restaurant from one place—scheduled by daypart and published without replacing a single printed board.",
+          tags:["Daypart scheduling","Remote price updates","Multi-location publishing"],
+          proofTitle:"Centralized menu control", proofStat:"One update · every location",
+          proofBody:"Keep approved menus, pricing and promotions consistent across the entire QSR network.",
+          stat:null, cta:"Book a demo" } },
+        { title:"Self-Service Ordering", src:ASSET_BASE+"story/qsr/2.png", type:"image", spot:{
+          x:40, y:34, kind:"Use case", cat:"Self-Service Ordering",
+          headline:"A faster path from choice to checkout",
+          body:"Guide guests through ordering, customization and payment with an intuitive kiosk experience that keeps queues moving during peak hours.",
+          tags:["Guided ordering","Smart upselling","POS integration"],
+          proofTitle:"Connected ordering", proofStat:"Kiosk → POS → kitchen",
+          proofBody:"Every completed order moves directly into the restaurant workflow with fewer manual handoffs.",
+          stat:null, cta:"Book a demo" } },
+        { title:"Order Status & Pickup", src:ASSET_BASE+"story/qsr/3.png", type:"image", spot:{
+          x:65, y:22, kind:"Use case", cat:"Order Status Boards",
+          headline:"Turn waiting into certainty",
+          body:"Show every order moving from preparation to pickup in real time, helping guests know exactly when—and where—their meal is ready.",
+          tags:["Live order status","Ready alerts","Pickup flow"],
+          proofTitle:"Front-of-house visibility", proofStat:"Preparing → Ready",
+          proofBody:"A clear digital handoff reduces counter questions and keeps the pickup area organized.",
+          stat:null, cta:"Book a demo" } },
+        { title:"Entrance Promotions", src:ASSET_BASE+"story/qsr/4.png", type:"image", spot:{
+          x:79, y:38, kind:"Use case", cat:"Entrance Promotions",
+          headline:"Win the order before guests walk in",
+          body:"Promote premium combos, limited-time offers and high-margin items at the entrance—updated remotely by time, location or campaign.",
+          tags:["LTO campaigns","Daypart creative","Remote publishing"],
+          proofTitle:"Campaign control", proofStat:"One campaign · every storefront",
+          proofBody:"Launch consistent entrance promotions across every restaurant without printing or local file updates.",
+          stat:null, cta:"Book a demo" } },
         { title:"A QSR Story", src:null, type:null, spot:{
           x:54, y:50, kind:"Case study", cat:"Chain-Wide Rollout",
           headline:"12 seconds off every order",
@@ -1041,7 +1096,7 @@
   function spotCardHTML(spot){
     const pos = spotQuadrant(spot.x, spot.y);
     return `
-      <div class="spot-card" data-pos="${pos}" style="left:${spot.x}%; top:${spot.y}%;">
+      <div class="spot-card${spot.proofTitle ? " has-proof" : ""}" data-pos="${pos}" style="left:${spot.x}%; top:${spot.y}%;">
         <div class="spot-card-inner" aria-hidden="true">
           <button class="spot-close" type="button" aria-label="Close">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
@@ -1051,6 +1106,10 @@
           <p class="spot-body">${spot.body}</p>
           ${spot.stat ? `<div class="spot-stat">${spot.stat}</div>` : ""}
           <div class="spot-tags">${spot.tags.map(t => `<span>${t}</span>`).join("")}</div>
+          ${spot.proofTitle ? `<div class="spot-proof">
+            <div class="spot-proof-head"><strong>${spot.proofTitle}</strong><b>${spot.proofStat}</b></div>
+            <p>${spot.proofBody}</p>
+          </div>` : ""}
           <button class="spot-cta" type="button">${spot.cta} <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
         </div>
       </div>`;
