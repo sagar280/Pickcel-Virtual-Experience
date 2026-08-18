@@ -417,13 +417,17 @@
 
   .story-close{
     position:fixed; top:clamp(18px,3vh,30px); right:clamp(18px,3vw,40px); z-index:76;
-    width:46px; height:46px; display:grid; place-items:center;
-    border-radius:50%; border:1.3px solid var(--line);
+    min-width:110px; height:54px; padding:0 20px;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    border-radius:999px; border:1.3px solid var(--line);
     background:rgba(13,10,21,.55); color:var(--paper); cursor:pointer;
+    font:600 14px/1 "Bricolage Grotesque",sans-serif;
     backdrop-filter:blur(10px);
     transition:background .25s ease, transform .2s ease;
   }
-  .story-close:hover{ background:rgba(237,231,245,.16); transform:rotate(90deg); }
+  .story-close svg{ transition:transform .2s ease; }
+  .story-close:hover{ background:rgba(237,231,245,.16); }
+  .story-close:hover svg{ transform:rotate(90deg); }
   .story-close:focus-visible{ outline:2px solid var(--paper); outline-offset:4px; }
 
   .story-progress{
@@ -443,15 +447,17 @@
     display:flex; flex-direction:row; gap:18px;
   }
   .story-nav-btn{
-    width:84px; height:84px; display:grid; place-items:center;
-    border-radius:50%; border:1.3px solid var(--line);
+    width:144px; height:84px; padding:0 20px;
+    display:flex; align-items:center; justify-content:center; gap:11px;
+    border-radius:999px; border:1.3px solid var(--line);
     background:rgba(13,10,21,.55); color:var(--paper); cursor:pointer;
+    font:600 14px/1 "Bricolage Grotesque",sans-serif;
     backdrop-filter:blur(10px);
     transition:background .25s ease, transform .2s ease, opacity .25s ease;
   }
   .story-nav-btn:hover{ background:rgba(237,231,245,.16); }
   .story-nav-btn:active{ transform:scale(.94); }
-  .story-nav-btn svg{ width:30px; height:30px; stroke-width:2; }
+  .story-nav-btn svg{ width:27px; height:27px; flex:0 0 auto; stroke-width:2; }
   .story-nav-btn:focus-visible{ outline:2px solid var(--paper); outline-offset:4px; }
   .story-nav-btn:disabled{ opacity:.28; cursor:default; pointer-events:none; }
 
@@ -575,6 +581,8 @@
 
   @media (max-width:640px){
     .story-eyebrow{ font-size:10.5px; }
+    .story-nav{ gap:12px; }
+    .story-nav-btn{ width:132px; padding:0 16px; }
   }
 
   /* Touch kiosks: reduce continuous GPU effects and compositing cost. */
@@ -643,14 +651,17 @@
 <div class="story" id="story" aria-hidden="true">
   <button class="story-close" id="storyClose" aria-label="Close">
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    <span>Close</span>
   </button>
   <div class="story-progress" id="storyProgress"></div>
   <div class="story-nav">
     <button class="story-nav-btn" id="storyUp" aria-label="Previous slide">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15l7-7 7 7"/></svg>
+      <span>Previous</span>
     </button>
     <button class="story-nav-btn" id="storyDown" aria-label="Next slide">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l7 7 7-7"/></svg>
+      <span>Next</span>
     </button>
   </div>
   <div class="story-scroll" id="storyScroll">
