@@ -19,7 +19,7 @@
     --rose:      #C2477E;
     --tour:      #C86B36;
     --tour-hi:   #D97C43;
-    /* ---- SIZE CONTROLS (press S in the page to tune these live) ---- */
+    /* ---- Carousel geometry ---- */
     --card-vw: 26vw;                                  /* card width          */
     --card-ar: 0.8;                                   /* width / height      */
     --gap:     26px;                                  /* space between cards */
@@ -151,6 +151,8 @@
     padding: 56px 0 84px;      /* room for the arc travel */
     overflow:hidden;
     cursor:grab;
+    touch-action:pan-y;
+    overscroll-behavior-x:contain;
   }
   .viewport.dragging{ cursor:grabbing; }
 
@@ -256,33 +258,6 @@
   }
   .card:hover .label i, .card:focus-within .label i{ transform:translateX(6px); }
 
-  /* replace chip */
-  .chip{
-    position:absolute;
-    top:10px; right:10px;
-    display:inline-flex; align-items:center; gap:6px;
-    padding:7px 11px;
-    border:0;
-    border-radius:999px;
-    background:rgba(248,241,249,.9);
-    color:var(--ink);
-    font-family:"DM Sans",sans-serif;
-    font-size:11px; font-weight:500; letter-spacing:.04em; text-transform:uppercase;
-    cursor:pointer;
-    opacity:0; transform:translateY(-6px);
-    transition:opacity .35s ease, transform .35s ease;
-    backdrop-filter: blur(6px);
-  }
-  .card:hover .chip, .card:focus-within .chip{ opacity:1; transform:none; }
-  .chip:hover{ background:var(--paper); }
-
-  /* drag-over state */
-  .card.over .frame{
-    outline:2px dashed var(--paper);
-    outline-offset:-10px;
-  }
-  .card.over .veil{ opacity:1; }
-
   /* ---------- Arc edges (the pink cut, top + bottom) ---------- */
 
   /* ---------- Primary action ---------- */
@@ -372,6 +347,9 @@
     position:absolute; inset:0;
     overflow-y:auto; overflow-x:hidden;
     -webkit-overflow-scrolling:touch;
+    touch-action:pan-y;
+    overscroll-behavior-y:contain;
+    scroll-snap-type:y mandatory;
     scrollbar-width:none;
   }
   .story-scroll::-webkit-scrollbar{ display:none; }
@@ -381,6 +359,8 @@
     height:100svh; width:100%;
     overflow:hidden;
     background:var(--bg-deep);
+    scroll-snap-align:start;
+    scroll-snap-stop:always;
   }
 
   .story-panel img, .story-panel video{
@@ -431,24 +411,6 @@
     clip-path:inset(50%); white-space:nowrap;
   }
 
-  .story-chip{
-    position:absolute; top:clamp(20px,4vh,44px); right:clamp(78px,9vw,116px);
-    display:inline-flex; align-items:center; gap:6px;
-    padding:8px 13px; border:0; border-radius:999px;
-    background:rgba(248,241,249,.12);
-    color:var(--paper);
-    font-family:"DM Sans",sans-serif; font-size:11px; font-weight:500;
-    letter-spacing:.04em; text-transform:uppercase; cursor:pointer;
-    opacity:0; transform:translateY(-6px);
-    backdrop-filter:blur(8px);
-    transition:opacity .35s ease, transform .35s ease, background .3s ease;
-  }
-  .story-panel.in .story-chip{ opacity:.85; transform:none; }
-  .story-chip:hover{ background:rgba(248,241,249,.24); opacity:1 !important; }
-
-  .story-panel.over .story-ph,
-  .story-panel.over .story-scrim{ outline:2px dashed var(--paper); outline-offset:-14px; }
-
   .story-close{
     position:fixed; top:clamp(18px,3vh,30px); right:clamp(18px,3vw,40px); z-index:76;
     width:46px; height:46px; display:grid; place-items:center;
@@ -492,23 +454,30 @@
 
   .spot{
     position:absolute; z-index:20;
-    width:13px; height:13px;
+    width:44px; height:44px;
     transform:translate(-50%,-50%);
     border:0; border-radius:50%;
-    background:var(--tour);
-    box-shadow:0 0 0 3px rgba(13,10,21,.55);
+    background:transparent;
     cursor:pointer;
     opacity:0;
-    transition:opacity .5s ease .35s, transform .2s ease, background .2s ease;
+    transition:opacity .5s ease .35s, transform .2s ease;
   }
   .story-panel.in .spot{ opacity:1; }
   .story-panel:not(.in) .spot{ pointer-events:none; }
   .spot:hover{ transform:translate(-50%,-50%) scale(1.15); }
   .spot:focus-visible{ outline:2px solid var(--paper); outline-offset:6px; }
-  .spot.active{ background:var(--paper); }
+  .spot::before{
+    content:""; position:absolute; left:50%; top:50%;
+    width:13px; height:13px;
+    transform:translate(-50%,-50%);
+    border-radius:50%; background:var(--tour);
+    box-shadow:0 0 0 3px rgba(13,10,21,.55);
+    transition:background .2s ease;
+  }
+  .spot.active::before{ background:var(--paper); }
 
   .spot::after{
-    content:""; position:absolute; inset:-11px;
+    content:""; position:absolute; inset:5px;
     border-radius:50%; border:1.5px solid var(--tour);
     opacity:.6;
     animation:spot-pulse 2.4s ease-out infinite;
@@ -603,73 +572,6 @@
     .story-eyebrow{ font-size:10.5px; }
   }
 
-  /* ---------- size panel (dev tool — delete this block to ship) ---------- */
-
-  .sizer-open{
-    position:fixed; right:18px; bottom:18px; z-index:50;
-    width:42px; height:42px; display:grid; place-items:center;
-    border-radius:50%; border:1.3px solid var(--line);
-    background:rgba(13,10,21,.8); color:var(--ink); cursor:pointer;
-    backdrop-filter:blur(8px);
-    font-size:15px; opacity:.5; transition:opacity .25s ease;
-  }
-  .sizer-open:hover{ opacity:1; }
-
-  .sizer{
-    position:fixed; right:18px; bottom:18px; z-index:51;
-    width:268px; padding:16px 18px 14px;
-    border-radius:12px;
-    background:rgba(18,13,30,.95);
-    border:1px solid var(--line);
-    color:var(--paper);
-    backdrop-filter:blur(14px);
-    box-shadow:0 24px 60px -20px rgba(0,0,0,.85);
-    display:none;
-  }
-  .sizer.on{ display:block; }
-
-  .sizer h2{
-    margin:0 0 14px;
-    font-family:"Bricolage Grotesque",sans-serif;
-    font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase;
-    display:flex; justify-content:space-between; align-items:center;
-  }
-  .sizer h2 button{
-    border:0; background:none; color:var(--paper);
-    font-size:16px; line-height:1; cursor:pointer; opacity:.6; padding:0;
-  }
-  .sizer h2 button:hover{ opacity:1; }
-
-  .row{ margin-bottom:12px; }
-  .row label{
-    display:flex; justify-content:space-between;
-    font-size:11px; letter-spacing:.04em; margin-bottom:6px; opacity:.78;
-  }
-  .row label b{ font-weight:500; font-variant-numeric:tabular-nums; opacity:1; }
-
-  .row input[type=range]{
-    width:100%; height:3px; margin:0;
-    -webkit-appearance:none; appearance:none;
-    background:rgba(248,241,249,.25); border-radius:2px; outline:none;
-  }
-  .row input[type=range]::-webkit-slider-thumb{
-    -webkit-appearance:none; appearance:none;
-    width:13px; height:13px; border-radius:50%;
-    background:var(--paper); cursor:pointer;
-  }
-  .row input[type=range]::-moz-range-thumb{
-    width:13px; height:13px; border:0; border-radius:50%;
-    background:var(--paper); cursor:pointer;
-  }
-
-  .sizer pre{
-    margin:12px 0 0; padding:10px;
-    background:rgba(248,241,249,.08); border-radius:7px;
-    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:10px; line-height:1.65; white-space:pre-wrap;
-    opacity:.85; user-select:all;
-  }
-
   @media (prefers-reduced-motion: reduce){
     *{ transition-duration:.01ms !important; }
     .glow{ animation:none !important; }
@@ -718,37 +620,8 @@
     </button>
   </div>
 
-  <p class="hint">Click a card to open its story &nbsp;·&nbsp; drop a photo or video to swap it &nbsp;·&nbsp; press S to resize the cards</p>
+  <p class="hint">Swipe to explore &nbsp;·&nbsp; tap a card to open its story</p>
 </main>
-
-<button class="sizer-open" id="sizerOpen" aria-label="Adjust card sizes" title="Adjust sizes (S)">&#8596;</button>
-
-<aside class="sizer" id="sizer" aria-label="Card size controls">
-  <h2>Card size <button id="sizerClose" aria-label="Close">&times;</button></h2>
-
-  <div class="row">
-    <label for="s-w">Width <b><span id="v-w"></span>vw</b></label>
-    <input type="range" id="s-w" min="14" max="42" step="0.5">
-  </div>
-  <div class="row">
-    <label for="s-ar">Shape <b><span id="v-ar"></span></b></label>
-    <input type="range" id="s-ar" min="0.55" max="1.5" step="0.01">
-  </div>
-  <div class="row">
-    <label for="s-gap">Gap <b><span id="v-gap"></span>px</b></label>
-    <input type="range" id="s-gap" min="0" max="70" step="1">
-  </div>
-  <div class="row">
-    <label for="s-dip">Arc dip <b><span id="v-dip"></span>px</b></label>
-    <input type="range" id="s-dip" min="0" max="110" step="1">
-  </div>
-  <div class="row">
-    <label for="s-tilt">Tilt <b><span id="v-tilt"></span>&deg;</b></label>
-    <input type="range" id="s-tilt" min="0" max="16" step="0.5">
-  </div>
-
-  <pre id="v-css"></pre>
-</aside>
 
 <div class="story" id="story" aria-hidden="true">
   <button class="story-close" id="storyClose" aria-label="Close">
@@ -767,8 +640,6 @@
     <div class="story-track" id="storyTrack"></div>
   </div>
 </div>
-
-<input type="file" id="picker" accept="image/*,video/*" hidden>
 
 <script>
 (() => {
@@ -908,11 +779,10 @@
 
   const viewport = document.getElementById("viewport");
   const track    = document.getElementById("track");
-  const picker   = document.getElementById("picker");
   const reduced  = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   let cards = [], setWidth = 0, offset = 0, target = null;
-  const arc = { dip: 46, tilt: 7 };            // driven by the size panel
+  const arc = { dip: 46, tilt: 7 };
   let speed = reduced ? 0 : 42;          // px per second, leftward
   let pointerDown = false;
 
@@ -930,7 +800,7 @@
     const s = SECTORS[i];
     return `
       <figure class="card${s.src ? " filled" : ""}" data-i="${i}" tabindex="0"
-              role="button" aria-label="${s.label}. Click to open the story, or drop a photo or video to replace it.">
+              role="button" aria-label="${s.label}. Tap to open the story.">
         <div class="frame">
           ${mediaTagHTML(s)}
           <div class="ph">
@@ -938,10 +808,9 @@
               <rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M21 16l-5-5-6 6-3-3-4 4"/>
             </svg>
             <b>${s.label.replace("Explore ","")}</b>
-            <span>Drop a photo or video</span>
+            <span>Media unavailable</span>
           </div>
           <div class="veil"></div>
-          <button class="chip" data-act="replace" type="button" aria-label="Replace this card's media">Replace</button>
           <figcaption class="label"><b>${s.label}</b><i>&#8594;</i></figcaption>
         </div>
       </figure>`;
@@ -1020,124 +889,46 @@
      on every mousedown (even a plain tap) retargets the resulting native
      "click" event to `viewport` instead of the element under the cursor,
      which silently breaks click-to-open-story and click-to-replace. */
-  let startX = 0, startOff = 0, moved = 0, captured = false, capturedId = null;
-  const DRAG_THRESHOLD = 4;
+  let startX = 0, startOff = 0, moved = 0, captured = false, activePointerId = null;
+  const DRAG_THRESHOLD = 10;
 
   viewport.addEventListener("pointerdown", e => {
-    if (e.button !== 0) return;
+    if (e.button !== 0 || !e.isPrimary || pointerDown) return;
     pointerDown = true; moved = 0; captured = false;
+    activePointerId = e.pointerId;
     startX = e.clientX; startOff = offset; target = null;
   });
 
   viewport.addEventListener("pointermove", e => {
-    if (!pointerDown) return;
+    if (!pointerDown || e.pointerId !== activePointerId) return;
     const dx = e.clientX - startX;
     moved = Math.max(moved, Math.abs(dx));
     if (!captured && moved > DRAG_THRESHOLD){
       captured = true;
-      capturedId = e.pointerId;
       viewport.classList.add("dragging");
       try { viewport.setPointerCapture(e.pointerId); } catch {}
     }
     if (captured) offset = startOff + dx;
   });
 
-  const release = () => {
-    if (!pointerDown) return;
+  const release = e => {
+    if (!pointerDown || e.pointerId !== activePointerId) return;
     pointerDown = false;
     if (captured){
       viewport.classList.remove("dragging");
-      try { viewport.releasePointerCapture(capturedId); } catch {}
+      try { viewport.releasePointerCapture(activePointerId); } catch {}
     }
     captured = false;
+    activePointerId = null;
   };
   viewport.addEventListener("pointerup", release);
   viewport.addEventListener("pointercancel", release);
 
-  /* ---------- Photo replacement ---------- */
-  /* `pending` targets either a carousel card or one panel inside an open story */
-
-  let pending = null;
-
-  function openPicker(target){ pending = target; picker.value = ""; picker.click(); }
-
-  function buildMediaEl(type, url){
-    if (type === "video"){
-      const v = document.createElement("video");
-      v.src = url;
-      v.autoplay = true;
-      v.loop = true;
-      v.muted = true;
-      v.setAttribute("muted", "");     // attribute form: some browsers gate autoplay on this
-      v.playsInline = true;
-      v.setAttribute("playsinline", "");
-      return v;
-    }
-    const img = document.createElement("img");
-    img.src = url;
-    img.alt = "";
-    return img;
-  }
-
-  function setCardMedia(i, url, type){
-    const prev = SECTORS[i].src;
-    SECTORS[i].src = url;
-    SECTORS[i].type = type;
-    for (const c of cards){
-      if (Number(c.dataset.i) !== i) continue;
-      const frame = c.querySelector(".frame");
-      const old = frame.querySelector("img, video");
-      if (old) old.remove();
-      frame.prepend(buildMediaEl(type, url));
-      c.classList.add("filled");
-    }
-    if (prev && prev.startsWith("blob:") && prev !== url) URL.revokeObjectURL(prev);
-  }
-
-  function setStoryMedia(sector, slide, url, type){
-    const prev = SECTORS[sector].story[slide].src;
-    SECTORS[sector].story[slide].src = url;
-    SECTORS[sector].story[slide].type = type;
-    if (Number(storyTrack.dataset.sector) === sector){
-      const panel = storyPanels[slide];
-      if (panel){
-        const old = panel.querySelector("img, video");
-        if (old) old.remove();
-        panel.insertBefore(buildMediaEl(type, url), panel.firstChild);
-        panel.classList.add("filled", "in");   // show immediately, no fade-wait
-      }
-    }
-    if (prev && prev.startsWith("blob:") && prev !== url) URL.revokeObjectURL(prev);
-  }
-
-  function readFile(file, target){
-    if (!file) return;
-    const isImage = file.type.startsWith("image/");
-    const isVideo = file.type.startsWith("video/");
-    if (!isImage && !isVideo) return;
-    const url  = URL.createObjectURL(file);
-    const type = isImage ? "image" : "video";
-    if (target.kind === "card") setCardMedia(target.i, url, type);
-    else                         setStoryMedia(target.sector, target.slide, url, type);
-  }
-
-  picker.addEventListener("change", () => {
-    if (!pending) return;
-    readFile(picker.files[0], pending);
-    pending = null;
-  });
-
   track.addEventListener("click", e => {
-    if (moved > 6) return;                     // that was a drag, not a click
+    if (moved > DRAG_THRESHOLD) return;        // that was a drag, not a tap
     const card = e.target.closest(".card");
     if (!card) return;
-    const i = Number(card.dataset.i);
-    if (e.target.closest(".chip")){
-      e.stopPropagation();
-      openPicker({ kind:"card", i });
-    } else {
-      openStory(i);
-    }
+    openStory(Number(card.dataset.i));
   });
 
   track.addEventListener("keydown", e => {
@@ -1147,37 +938,6 @@
     e.preventDefault();
     openStory(Number(card.dataset.i));
   });
-
-  /* drag & drop */
-  ["dragenter","dragover"].forEach(t =>
-    track.addEventListener(t, e => {
-      const card = e.target.closest(".card");
-      if (!card) return;
-      e.preventDefault();
-      e.dataTransfer.dropEffect = "copy";
-      card.classList.add("over");
-    })
-  );
-
-  track.addEventListener("dragleave", e => {
-    const card = e.target.closest(".card");
-    if (card && !card.contains(e.relatedTarget)) card.classList.remove("over");
-  });
-
-  track.addEventListener("drop", e => {
-    const card = e.target.closest(".card");
-    if (!card) return;
-    e.preventDefault();
-    card.classList.remove("over");
-    readFile(e.dataTransfer.files[0], { kind:"card", i:Number(card.dataset.i) });
-  });
-
-  // don't let a stray drop elsewhere navigate the page away
-  ["dragover","drop"].forEach(t =>
-    document.addEventListener(t, e => {
-      if (!e.target.closest(".card, .story-panel")) e.preventDefault();
-    })
-  );
 
   /* ---------- Story overlay ---------- */
 
@@ -1217,7 +977,7 @@
       </div>`;
   }
 
-  function panelHTML(sector, slide, s){
+  function panelHTML(sector, slide, s, position, total){
     const eyebrowLabel = SECTORS[sector].label.replace("Explore ", "");
     return `
       <section class="story-panel${s.src ? " filled" : ""}"
@@ -1228,11 +988,10 @@
             <rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M21 16l-5-5-6 6-3-3-4 4"/>
           </svg>
           <b>${s.title}</b>
-          <span>Drop a photo or video</span>
+          <span>Media unavailable</span>
         </div>
         <div class="story-scrim"></div>
-        <div class="story-eyebrow"><b>${eyebrowLabel}</b>&nbsp;·&nbsp;${String(slide + 1).padStart(2,"0")} / ${SECTORS[sector].story.length}</div>
-        <button class="story-chip" type="button">Replace</button>
+        <div class="story-eyebrow"><b>${eyebrowLabel}</b>&nbsp;·&nbsp;${String(position + 1).padStart(2,"0")} / ${total}</div>
         <h2 class="story-title">${s.title}</h2>
         <button class="spot" type="button" style="left:${s.spot.x}%; top:${s.spot.y}%;" aria-label="${s.spot.headline}"></button>
         ${spotCardHTML(s.spot)}
@@ -1281,10 +1040,20 @@
 
   function openStory(sectorIndex){
     storyReturnFocus = document.activeElement;
-    const stories = SECTORS[sectorIndex].story;
+    const stories = SECTORS[sectorIndex].story
+      .map((story, originalIndex) => ({ story, originalIndex }))
+      .filter(item => item.story.src);
 
     storyTrack.dataset.sector = sectorIndex;
-    storyTrack.innerHTML = stories.map((s, i) => panelHTML(sectorIndex, i, s)).join("");
+    storyTrack.innerHTML = stories
+      .map((item, position) => panelHTML(
+        sectorIndex,
+        item.originalIndex,
+        item.story,
+        position,
+        stories.length
+      ))
+      .join("");
     storyPanels = [...storyTrack.querySelectorAll(".story-panel")];
 
     storyProgress.innerHTML = stories.map(() => `<i></i>`).join("");
@@ -1295,7 +1064,8 @@
       for (const entry of entries){
         entry.target.classList.toggle("in", entry.isIntersecting);
         if (entry.isIntersecting){
-          const idx = Number(entry.target.dataset.slide);
+          const idx = storyPanels.indexOf(entry.target);
+          if (idx < 0) continue;
           dots.forEach((d, i) => d.classList.toggle("on", i === idx));
           storyIndex = idx;
           updateStoryNav();
@@ -1338,7 +1108,6 @@
   storyTrack.addEventListener("click", e => {
     const panel = e.target.closest(".story-panel");
     if (!panel) return;
-    const sector = Number(panel.dataset.sector), slide = Number(panel.dataset.slide);
 
     const dot = e.target.closest(".spot");
     if (dot){ e.stopPropagation(); toggleSpot(panel, dot); return; }
@@ -1347,79 +1116,9 @@
 
     if (e.target.closest(".spot-card")) return;   // clicks inside the open card (e.g. the CTA) do nothing yet
 
-    if (e.target.closest(".story-chip")){ openPicker({ kind:"story", sector, slide }); return; }
-
     closeSpot(panel);   // clicked the media itself — dismiss any open hotspot card
   });
 
-  ["dragenter","dragover"].forEach(t =>
-    storyTrack.addEventListener(t, e => {
-      const panel = e.target.closest(".story-panel");
-      if (!panel) return;
-      e.preventDefault();
-      e.dataTransfer.dropEffect = "copy";
-      panel.classList.add("over");
-    })
-  );
-  storyTrack.addEventListener("dragleave", e => {
-    const panel = e.target.closest(".story-panel");
-    if (panel && !panel.contains(e.relatedTarget)) panel.classList.remove("over");
-  });
-  storyTrack.addEventListener("drop", e => {
-    const panel = e.target.closest(".story-panel");
-    if (!panel) return;
-    e.preventDefault();
-    panel.classList.remove("over");
-    const sector = Number(panel.dataset.sector), slide = Number(panel.dataset.slide);
-    readFile(e.dataTransfer.files[0], { kind:"story", sector, slide });
-  });
-
-  /* ---------- Size panel ---------- */
-
-  const panel = document.getElementById("sizer");
-  const css   = getComputedStyle(document.documentElement);
-  const S     = id => document.getElementById(id);
-
-  const ctl = {
-    w:    { el:S("s-w"),    out:S("v-w"),    val: parseFloat(css.getPropertyValue("--card-vw")) },
-    ar:   { el:S("s-ar"),   out:S("v-ar"),   val: parseFloat(css.getPropertyValue("--card-ar")) },
-    gap:  { el:S("s-gap"),  out:S("v-gap"),  val: parseFloat(css.getPropertyValue("--gap")) },
-    dip:  { el:S("s-dip"),  out:S("v-dip"),  val: arc.dip },
-    tilt: { el:S("s-tilt"), out:S("v-tilt"), val: arc.tilt },
-  };
-
-  function apply(rebuild){
-    const r = document.documentElement.style;
-    r.setProperty("--card-vw", ctl.w.val + "vw");
-    r.setProperty("--card-ar", ctl.ar.val);
-    r.setProperty("--gap",     ctl.gap.val + "px");
-    arc.dip  = ctl.dip.val;
-    arc.tilt = ctl.tilt.val;
-
-    for (const k in ctl) ctl[k].out.textContent = ctl[k].val;
-
-    S("v-css").textContent =
-      `--card-vw: ${ctl.w.val}vw;\n` +
-      `--card-ar: ${ctl.ar.val};\n` +
-      `--gap:     ${ctl.gap.val}px;\n` +
-      `arc.dip  = ${ctl.dip.val};\n` +
-      `arc.tilt = ${ctl.tilt.val};`;
-
-    if (rebuild) build();
-  }
-
-  for (const k in ctl){
-    const c = ctl[k];
-    c.el.value = c.val;
-    c.el.addEventListener("input", () => {
-      c.val = parseFloat(c.el.value);
-      apply(k === "w" || k === "ar" || k === "gap");   // geometry changes need a rebuild
-    });
-  }
-
-  const toggle = on => panel.classList.toggle("on", on);
-  S("sizerOpen").addEventListener("click", () => toggle(true));
-  S("sizerClose").addEventListener("click", () => toggle(false));
   addEventListener("keydown", e => {
     if (e.target.matches("input, textarea")) return;
     if (e.key === "Escape" && anySpotOpen()){
@@ -1430,8 +1129,6 @@
     if (e.key === "Escape" && storyOpen){ closeStory(); return; }
     if (storyOpen && e.key === "ArrowUp"){ e.preventDefault(); goToSlide(storyIndex - 1); return; }
     if (storyOpen && e.key === "ArrowDown"){ e.preventDefault(); goToSlide(storyIndex + 1); return; }
-    if (e.key === "s" || e.key === "S") toggle(!panel.classList.contains("on"));
-    if (e.key === "Escape") toggle(false);
   });
 
   /* ---------- Boot ---------- */
@@ -1442,7 +1139,6 @@
     resizeTimer = setTimeout(build, 160);
   });
 
-  apply(false);
   build();
   requestAnimationFrame(frame);
 })();
