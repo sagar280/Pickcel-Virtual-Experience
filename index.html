@@ -1104,10 +1104,10 @@
   function updateStoryNav(){
     storyUpBtn.disabled   = storyIndex <= 0;
     storyDownBtn.disabled = storyIndex >= storyPanels.length - 1;
-    const atEnd = storyPanels.length > 0 && storyIndex === storyPanels.length - 1;
-    storyPrevSectorBtn.hidden = !atEnd;
-    storyNextSectorBtn.hidden = !atEnd;
-    if (atEnd){
+    const showSectorLinks = storyPanels.length > 0 && storyIndex >= 1;
+    storyPrevSectorBtn.hidden = !showSectorLinks;
+    storyNextSectorBtn.hidden = !showSectorLinks;
+    if (showSectorLinks){
       const sector = Number(storyTrack.dataset.sector);
       const previousSector = (sector - 1 + SECTORS.length) % SECTORS.length;
       const nextSector = (sector + 1) % SECTORS.length;
