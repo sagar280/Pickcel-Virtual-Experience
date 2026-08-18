@@ -488,11 +488,23 @@
   }
   .spot.active::before{ background:var(--paper); }
 
+  .story-panel[data-sector="2"] .spot::before{
+    width:18px; height:18px;
+    background:#ff6a22;
+    box-shadow:0 0 0 4px rgba(13,10,21,.7), 0 0 20px rgba(255,106,34,.95);
+  }
+
   .spot::after{
     content:""; position:absolute; inset:5px;
     border-radius:50%; border:1.5px solid var(--tour);
     opacity:.6;
     animation:spot-pulse 2.4s ease-out infinite;
+  }
+  .story-panel[data-sector="2"] .spot::after{
+    inset:1px;
+    border-width:2px;
+    border-color:#ff6a22;
+    opacity:.9;
   }
   .spot.active::after{ animation-play-state:paused; opacity:0; }
 
@@ -764,22 +776,22 @@
       key:"qsr", label:"Explore QSR", src:ASSET_BASE+"cards/qsr.png", type:"image",
       story:[
         { title:"The Drive-Thru", src:ASSET_BASE+"story/qsr/1.png", type:"image", spot:{
-          x:60, y:34, kind:"Use case", cat:"Daypart Menus",
+          x:66, y:23, kind:"Use case", cat:"Daypart Menus",
           headline:"Menus that flex with demand",
           body:"Swap combos and pricing by daypart automatically, without anyone touching a board by hand.",
           tags:["Daypart menus","Remote pricing"], stat:null, cta:"Book a demo" } },
         { title:"Kitchen Display Systems", src:ASSET_BASE+"story/qsr/2.png", type:"image", spot:{
-          x:32, y:56, kind:"Use case", cat:"Order Sequencing",
+          x:40, y:34, kind:"Use case", cat:"Order Sequencing",
           headline:"Tickets, timed and tracked",
           body:"Kitchen screens sequence orders as they fire and flag any ticket running behind.",
           tags:["Order sequencing","SLA alerts"], stat:null, cta:"Book a demo" } },
         { title:"The Menu Board", src:ASSET_BASE+"story/qsr/3.png", type:"image", spot:{
-          x:68, y:60, kind:"Use case", cat:"Dynamic Upsell",
+          x:65, y:22, kind:"Use case", cat:"Dynamic Upsell",
           headline:"Upsell exactly when it lands",
           body:"Highlight combos and limited-time offers the moment order volume says they'll convert.",
           tags:["Dynamic upsell","LTO scheduling"], stat:null, cta:"Book a demo" } },
         { title:"Order Kiosks", src:ASSET_BASE+"story/qsr/4.png", type:"image", spot:{
-          x:44, y:30, kind:"Use case", cat:"Guided Ordering",
+          x:79, y:38, kind:"Use case", cat:"Guided Ordering",
           headline:"Faster taps, fewer mistakes",
           body:"Guided ordering flows cut mis-orders and keep the line moving through peak hours.",
           tags:["Guided flows","Peak-hour tuning"], stat:null, cta:"Book a demo" } },
