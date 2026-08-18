@@ -459,6 +459,14 @@
   .story-nav-btn svg{ width:27px; height:27px; flex:0 0 auto; stroke-width:2; }
   .story-nav-btn:focus-visible{ outline:2px solid var(--paper); outline-offset:4px; }
   .story-nav-btn:disabled{ opacity:.28; cursor:default; pointer-events:none; }
+  .story-sector-link{
+    width:172px;
+    border-color:rgba(218,116,57,.7);
+    background:rgba(123,59,30,.76);
+  }
+  .story-sector-link:hover{ background:var(--tour); }
+  .story-sector-link[hidden]{ display:none; }
+  .story-sector-link span{ white-space:nowrap; }
 
   /* ---------- Hotspot dot + info card ---------- */
 
@@ -584,6 +592,13 @@
     .story-nav-btn{ width:132px; padding:0 16px; }
   }
 
+  @media (max-width:560px){
+    .story-nav{ gap:8px; }
+    .story-nav-btn{ width:110px; height:72px; padding:0 10px; font-size:12px; }
+    .story-sector-link{ width:120px; }
+    .story-nav-btn svg{ width:23px; height:23px; }
+  }
+
   /* Touch kiosks: reduce continuous GPU effects and compositing cost. */
   @media (any-pointer:coarse){
     .glow, .grain{ display:none; }
@@ -654,6 +669,10 @@
   </button>
   <div class="story-progress" id="storyProgress"></div>
   <div class="story-nav">
+    <button class="story-nav-btn story-sector-link" id="storyPrevSector" aria-label="Explore previous experience" hidden>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+      <span id="storyPrevSectorLabel"></span>
+    </button>
     <button class="story-nav-btn" id="storyUp" aria-label="Previous slide">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15l7-7 7 7"/></svg>
       <span>Previous</span>
@@ -661,6 +680,10 @@
     <button class="story-nav-btn" id="storyDown" aria-label="Next slide">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l7 7 7-7"/></svg>
       <span>Next</span>
+    </button>
+    <button class="story-nav-btn story-sector-link" id="storyNextSector" aria-label="Explore next experience" hidden>
+      <span id="storyNextSectorLabel"></span>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
     </button>
   </div>
   <div class="story-scroll" id="storyScroll">
@@ -992,6 +1015,10 @@
   const storyCloseBtn  = document.getElementById("storyClose");
   const storyUpBtn     = document.getElementById("storyUp");
   const storyDownBtn   = document.getElementById("storyDown");
+  const storyPrevSectorBtn = document.getElementById("storyPrevSector");
+  const storyNextSectorBtn = document.getElementById("storyNextSector");
+  const storyPrevSectorLabel = document.getElementById("storyPrevSectorLabel");
+  const storyNextSectorLabel = document.getElementById("storyNextSectorLabel");
 
   let storyPanels = [];
   let storyOpen = false;
@@ -1071,6 +1098,20 @@
   function updateStoryNav(){
     storyUpBtn.disabled   = storyIndex <= 0;
     storyDownBtn.disabled = storyIndex >= storyPanels.length - 1;
+    const atEnd = storyPanels.length > 0 && storyIndex === storyPanels.length - 1;
+    storyPrevSectorBtn.hidden = !atEnd;
+    storyNextSectorBtn.hidden = !atEnd;
+    if (atEnd){
+      const sector = Number(storyTrack.dataset.sector);
+      const previousSector = (sector - 1 + SECTORS.length) % SECTORS.length;
+      const nextSector = (sector + 1) % SECTORS.length;
+      storyPrevSectorBtn.dataset.sector = previousSector;
+      storyNextSectorBtn.dataset.sector = nextSector;
+      storyPrevSectorLabel.textContent = SECTORS[previousSector].label;
+      storyNextSectorLabel.textContent = SECTORS[nextSector].label;
+      storyPrevSectorBtn.setAttribute("aria-label", `${SECTORS[previousSector].label}, starting at slide 1`);
+      storyNextSectorBtn.setAttribute("aria-label", `${SECTORS[nextSector].label}, starting at slide 1`);
+    }
   }
 
   function mountStoryMedia(panel, active){
@@ -1222,6 +1263,8 @@
   storyCloseBtn.addEventListener("click", closeStory);
   storyUpBtn.addEventListener("click", () => goToSlide(storyIndex - 1));
   storyDownBtn.addEventListener("click", () => goToSlide(storyIndex + 1));
+  storyPrevSectorBtn.addEventListener("click", () => openStory(Number(storyPrevSectorBtn.dataset.sector)));
+  storyNextSectorBtn.addEventListener("click", () => openStory(Number(storyNextSectorBtn.dataset.sector)));
   document.querySelector(".tour").addEventListener("click", () => openStory(0));
 
   storyScrollEl.addEventListener("scroll", () => {
