@@ -345,11 +345,10 @@
 
   .story-scroll{
     position:absolute; inset:0;
-    overflow-y:auto; overflow-x:hidden;
-    -webkit-overflow-scrolling:touch;
+    overflow:hidden;
     touch-action:none;
     overscroll-behavior-y:contain;
-    scroll-snap-type:y mandatory;
+    scroll-snap-type:none;
     scrollbar-width:none;
   }
   .story-scroll::-webkit-scrollbar{ display:none; }
@@ -1118,7 +1117,7 @@
 
   function syncStoryMedia(activeIndex){
     storyPanels.forEach((panel, i) => {
-      const keepReady = Math.abs(i - activeIndex) <= 1;
+      const keepReady = i === activeIndex || i === activeIndex + 1;
       if (keepReady) mountStoryMedia(panel, i === activeIndex);
       else unmountStoryMedia(panel);
     });
@@ -1224,73 +1223,6 @@
   storyUpBtn.addEventListener("click", () => goToSlide(storyIndex - 1));
   storyDownBtn.addEventListener("click", () => goToSlide(storyIndex + 1));
   document.querySelector(".tour").addEventListener("click", () => openStory(0));
-
-  /* Native sticky scrolling can snap back during a reverse swipe on kiosk
-     touchscreens. Drive the vertical scroll directly from the pointer so the
-     slide follows the finger equally in both directions, then settle exactly
-     one panel on release. */
-  let storySwipeId = null;
-  let storySwipeStartX = 0;
-  let storySwipeStartY = 0;
-  let storySwipeStartTop = 0;
-  let storySwipeStartIndex = 0;
-  let storySwipeDragging = false;
-  let storySwipeRejected = false;
-  const STORY_SWIPE_START = 10;
-  const STORY_SWIPE_COMMIT = 48;
-
-  storyScrollEl.addEventListener("pointerdown", e => {
-    if (!storyOpen || !e.isPrimary || e.button !== 0) return;
-    if (e.target.closest("button, .spot-card")) return;
-    storySwipeId = e.pointerId;
-    storySwipeStartX = e.clientX;
-    storySwipeStartY = e.clientY;
-    storySwipeStartTop = storyIndex * storyScrollEl.clientHeight;
-    storySwipeStartIndex = storyIndex;
-    storySwipeDragging = false;
-    storySwipeRejected = false;
-  });
-
-  storyScrollEl.addEventListener("pointermove", e => {
-    if (e.pointerId !== storySwipeId || storySwipeRejected) return;
-    const dx = e.clientX - storySwipeStartX;
-    const dy = e.clientY - storySwipeStartY;
-    if (!storySwipeDragging){
-      if (Math.abs(dx) > STORY_SWIPE_START && Math.abs(dx) > Math.abs(dy)){
-        storySwipeRejected = true;
-        return;
-      }
-      if (Math.abs(dy) <= STORY_SWIPE_START) return;
-      storySwipeDragging = true;
-      storyScrollEl.classList.add("resetting");
-      try { storyScrollEl.setPointerCapture(e.pointerId); } catch {}
-    }
-    e.preventDefault();
-    const maxTop = Math.max(0, (storyPanels.length - 1) * storyScrollEl.clientHeight);
-    storyScrollEl.scrollTop = Math.max(0, Math.min(maxTop, storySwipeStartTop - dy));
-  });
-
-  const finishStorySwipe = e => {
-    if (e.pointerId !== storySwipeId) return;
-    const dy = e.clientY - storySwipeStartY;
-    if (storySwipeDragging){
-      try { storyScrollEl.releasePointerCapture(e.pointerId); } catch {}
-      const direction = Math.abs(dy) >= STORY_SWIPE_COMMIT ? (dy < 0 ? 1 : -1) : 0;
-      goToSlide(storySwipeStartIndex + direction);
-    }
-    storySwipeId = null;
-    storySwipeDragging = false;
-    storySwipeRejected = false;
-  };
-
-  storyScrollEl.addEventListener("pointerup", finishStorySwipe);
-  storyScrollEl.addEventListener("pointercancel", e => {
-    if (e.pointerId !== storySwipeId) return;
-    goToSlide(storySwipeStartIndex);
-    storySwipeId = null;
-    storySwipeDragging = false;
-    storySwipeRejected = false;
-  });
 
   storyScrollEl.addEventListener("scroll", () => {
     const open = storyTrack.querySelector(".spot-card.open");
