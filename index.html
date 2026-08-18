@@ -488,6 +488,7 @@
   }
   .spot.active::before{ background:var(--paper); }
 
+  .story-panel[data-sector="0"] .spot::before,
   .story-panel[data-sector="2"] .spot::before{
     width:18px; height:18px;
     background:#ff6a22;
@@ -500,6 +501,7 @@
     opacity:.6;
     animation:spot-pulse 2.4s ease-out infinite;
   }
+  .story-panel[data-sector="0"] .spot::after,
   .story-panel[data-sector="2"] .spot::after{
     inset:1px;
     border-width:2px;
@@ -758,26 +760,38 @@
     {
       key:"manufacturing", label:"Explore Manufacturing", src:ASSET_BASE+"cards/manufacturing.png", type:"image",
       story:[
-        { title:"The Plant Floor", src:ASSET_BASE+"story/manufacturing/1.png", type:"image", spot:{
-          x:64, y:34, kind:"Use case", cat:"Production Visibility",
-          headline:"Line status at a glance",
-          body:"Live dashboards surface throughput, downtime, and quality flags the moment they happen on the floor.",
-          tags:["Live dashboards","Downtime alerts"], stat:null, cta:"Book a demo" } },
-        { title:"Precision Assembly", src:ASSET_BASE+"story/manufacturing/2.png", type:"image", spot:{
-          x:28, y:60, kind:"Use case", cat:"Guided Assembly",
-          headline:"Instructions that catch mistakes first",
-          body:"Step-by-step visual guidance at each station cuts assembly errors and shortens new-hire ramp time.",
-          tags:["Work instructions","Error-proofing"], stat:null, cta:"Book a demo" } },
-        { title:"Quality Control", src:ASSET_BASE+"story/manufacturing/3.png", type:"image", spot:{
-          x:70, y:58, kind:"Use case", cat:"Inspection",
-          headline:"Catch defects before they ship",
-          body:"Vision-assisted inspection flags defects at the station, before the part reaches the next line.",
-          tags:["Vision inspection","Defect tracking"], stat:null, cta:"Book a demo" } },
-        { title:"Automation & Robotics", src:ASSET_BASE+"story/manufacturing/4.png", type:"image", spot:{
-          x:42, y:32, kind:"Use case", cat:"Fleet Monitoring",
-          headline:"Every robotic cell, one screen",
-          body:"Fleet health and cycle times for the whole line, streamed live so a stall gets caught in seconds.",
-          tags:["Fleet health","Cycle-time tracking"], stat:null, cta:"Book a demo" } },
+        { title:"Production Visibility", src:ASSET_BASE+"story/manufacturing/1.png", type:"image", spot:{
+          x:50, y:30, kind:"Use case", cat:"Production Dashboards",
+          headline:"Turn factory data into immediate action",
+          body:"Display live output, efficiency, quality and downtime information where production teams can see it—helping operators identify issues and respond before they affect the shift.",
+          tags:["Live KPI dashboards","Downtime alerts","Shift visibility"],
+          proofTitle:"Factory-wide visibility", proofStat:"One dashboard · every production line",
+          proofBody:"Keep operators and supervisors aligned with continuously updated performance information across the plant floor.",
+          stat:null, cta:"Book a demo" } },
+        { title:"Employee Feedback", src:ASSET_BASE+"story/manufacturing/2.png", type:"image", spot:{
+          x:16, y:38, kind:"Use case", cat:"Employee Engagement",
+          headline:"Give every employee a voice",
+          body:"Place surveys, announcements and QR-powered feedback prompts in high-traffic areas so frontline employees can participate without needing a corporate email or workstation.",
+          tags:["QR surveys","Employee feedback","Location-based messaging"],
+          proofTitle:"Connected frontline teams", proofStat:"Scan · respond · improve",
+          proofBody:"Collect timely feedback directly from the factory floor and manage engagement campaigns from one central platform.",
+          stat:null, cta:"Book a demo" } },
+        { title:"Safety Communications", src:ASSET_BASE+"story/manufacturing/3.png", type:"image", spot:{
+          x:46, y:18, kind:"Use case", cat:"Workplace Safety",
+          headline:"Put critical safety information in sight",
+          body:"Communicate active hazards, PPE requirements, evacuation routes and shift-specific instructions on highly visible screens throughout the facility.",
+          tags:["Safety alerts","PPE reminders","Emergency messaging"],
+          proofTitle:"Plant-wide safety communication", proofStat:"One alert · every affected screen",
+          proofBody:"Update safety messaging instantly by zone, production area or facility when conditions and priorities change.",
+          stat:null, cta:"Book a demo" } },
+        { title:"Workforce Communications", src:ASSET_BASE+"story/manufacturing/4.png", type:"image", spot:{
+          x:29, y:21, kind:"Use case", cat:"Internal Communications",
+          headline:"Keep frontline teams informed and growing",
+          body:"Share career opportunities, training programs, company updates and employee recognition where manufacturing teams naturally gather throughout their workday.",
+          tags:["Career development","Training updates","Employee recognition"],
+          proofTitle:"Communication beyond the inbox", proofStat:"Every message · every shift",
+          proofBody:"Reach deskless employees with consistent, relevant communication across break areas, entrances and production zones.",
+          stat:null, cta:"Book a demo" } },
         { title:"A Manufacturing Story", src:null, type:null, spot:{
           x:56, y:50, kind:"Case study", cat:"Multi-Shift Rollout",
           headline:"Cutting changeover time by 40%",
