@@ -910,7 +910,9 @@
 
   let cards = [], setWidth = 0, offset = 0, target = null;
   const arc = { dip: 46, tilt: 7 };
-  let speed = reduced || touchFirst ? 0 : 42; // keep touch targets stationary
+  // Keep the carousel moving on touch kiosks, but at a gentler speed to
+  // preserve stable tap targets and reduce work on lower-memory hardware.
+  let speed = reduced ? 0 : (touchFirst ? 28 : 42);
   let pointerDown = false;
 
   /* ---------- Build ---------- */
