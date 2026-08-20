@@ -762,6 +762,7 @@
     display:inline-flex; align-items:center; gap:7px;
     padding:9px 15px; border:0; border-radius:999px;
     background:var(--tour); color:#FBF0E8;
+    text-decoration:none;
     font-family:"Bricolage Grotesque",sans-serif; font-weight:600; font-size:12.5px;
     letter-spacing:-0.01em; cursor:pointer;
     transition:background .25s ease, transform .2s ease;
@@ -909,6 +910,7 @@
      anywhere (your own server, S3, Cloudflare R2, Netlify, etc.) and switch
      this one line to that host's URL, e.g. "https://cdn.yoursite.com/". */
   const ASSET_BASE = "assets/";
+  const BOOK_DEMO_URL = "https://www.pickcel.com/book-a-demo";
 
   const SECTORS = [
     {
@@ -1330,7 +1332,7 @@
             <div class="spot-proof-head"><strong>${spot.proofTitle}</strong><b>${spot.proofStat}</b></div>
             <p>${spot.proofBody}</p>
           </div>` : ""}
-          <button class="spot-cta" type="button">${spot.cta} <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+          <a class="spot-cta" href="${BOOK_DEMO_URL}">${spot.cta} <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
         </div>
       </div>`;
   }
