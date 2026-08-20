@@ -458,6 +458,12 @@
     transition:background .2s ease, color .2s ease, transform .16s ease, opacity .2s ease;
   }
   .story-nav-btn:hover{ background:rgba(137,72,45,.58); color:#fff; }
+  .story-nav-btn.first-slide-cue{
+    background:#eb5e22;
+    color:#fff;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.22), 0 5px 16px rgba(153,52,13,.3);
+  }
+  .story-nav-btn.first-slide-cue:hover{ background:#f26a2d; }
   .story-nav-btn:not(:disabled):active{
     transform:scale(.97);
     background:#eb5e22;
@@ -1278,6 +1284,7 @@
     storyUpBtn.disabled   = storyIndex <= 0;
     const atLastSlide = storyPanels.length > 0 && storyIndex >= storyPanels.length - 1;
     storyDownBtn.disabled = atLastSlide;
+    storyDownBtn.classList.toggle("first-slide-cue", storyPanels.length > 1 && storyIndex === 0);
     const showSectorLinks = storyPanels.length > 0 && storyIndex >= 1;
     storyPrevSectorBtn.hidden = !showSectorLinks;
     storyNextSectorBtn.hidden = !showSectorLinks;
