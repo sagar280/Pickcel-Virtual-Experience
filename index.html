@@ -457,7 +457,7 @@
     font:600 14px/1 "Bricolage Grotesque",sans-serif;
     text-shadow:0 1px 1px rgba(0,0,0,.34);
     backdrop-filter:none;
-    margin-left:0;
+    margin-left:0; margin-right:0;
     transition:background .2s ease, color .2s ease, transform .24s ease, opacity .2s ease,
       width .3s cubic-bezier(.2,.7,.2,1), padding .3s cubic-bezier(.2,.7,.2,1),
       margin .3s cubic-bezier(.2,.7,.2,1), gap .22s ease;
@@ -478,17 +478,20 @@
   .story-nav-btn svg{ width:27px; height:27px; flex:0 0 auto; stroke-width:2; }
   .story-nav-btn:focus-visible{ outline:2px solid var(--paper); outline-offset:4px; }
   .story-nav-btn:disabled{ opacity:.28; cursor:default; pointer-events:none; }
-  #storyDown{ overflow:hidden; }
-  #storyDown > *{ transition:opacity .16s ease .12s; }
+  #storyUp, #storyDown{ overflow:hidden; }
+  #storyUp > *, #storyDown > *{ transition:opacity .16s ease .12s; }
+  .story-nav-btn.story-start-hidden,
   .story-nav-btn.story-end-hidden{
     width:0; min-width:0; padding-left:0; padding-right:0; gap:0;
-    margin-left:calc(0px - var(--story-gap));
     opacity:0; transform:scale(.72); visibility:hidden;
     box-shadow:none;
     transition:background .2s ease, color .2s ease, transform .24s ease, opacity .18s ease,
       width .3s cubic-bezier(.2,.7,.2,1), padding .3s cubic-bezier(.2,.7,.2,1),
       margin .3s cubic-bezier(.2,.7,.2,1), gap .22s ease, visibility 0s linear .3s;
   }
+  .story-nav-btn.story-start-hidden{ margin-right:calc(0px - var(--story-gap)); }
+  .story-nav-btn.story-end-hidden{ margin-left:calc(0px - var(--story-gap)); }
+  #storyUp.story-start-hidden > *,
   #storyDown.story-end-hidden > *{ opacity:0; transition-delay:0s; }
   .story-sector-link{
     position:relative;
@@ -1382,7 +1385,11 @@
   }
 
   function updateStoryNav(){
-    storyUpBtn.disabled   = storyIndex <= 0;
+    const atFirstSlide = storyPanels.length > 0 && storyIndex <= 0;
+    storyUpBtn.disabled = atFirstSlide;
+    storyUpBtn.classList.toggle("story-start-hidden", atFirstSlide);
+    storyUpBtn.setAttribute("aria-hidden", String(atFirstSlide));
+    storyUpBtn.tabIndex = atFirstSlide ? -1 : 0;
     const atLastSlide = storyPanels.length > 0 && storyIndex >= storyPanels.length - 1;
     storyDownBtn.disabled = atLastSlide;
     storyDownBtn.classList.toggle("story-end-hidden", atLastSlide);
@@ -1406,6 +1413,9 @@
     }
     if (atLastSlide && document.activeElement === storyDownBtn){
       requestAnimationFrame(() => storyNextSectorBtn.focus({ preventScroll:true }));
+    }
+    if (atFirstSlide && document.activeElement === storyUpBtn){
+      requestAnimationFrame(() => storyDownBtn.focus({ preventScroll:true }));
     }
   }
 
