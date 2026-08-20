@@ -568,6 +568,63 @@
     100% { transform:scale(2); opacity:0; }
   }
 
+  .spot-tooltip{
+    --tip-x:30px;
+    position:absolute; z-index:22;
+    left:var(--spot-x); top:var(--spot-y);
+    min-width:178px; max-width:220px; padding:13px 14px;
+    box-sizing:border-box;
+    display:flex; align-items:center; gap:12px;
+    border:1px solid rgba(255,255,255,.14); border-radius:14px;
+    background:rgba(31,27,36,.96); color:#f8f1f9;
+    box-shadow:0 12px 28px rgba(0,0,0,.38);
+    opacity:0; pointer-events:none;
+    transform:translate(var(--tip-x),-50%) scale(.94);
+    transform-origin:left center;
+    transition:opacity .28s ease .45s, transform .34s cubic-bezier(.2,.7,.2,1) .45s;
+  }
+  .spot-tooltip[data-side="left"]{
+    --tip-x:calc(-100% - 30px);
+    transform-origin:right center;
+  }
+  .spot-tooltip::before{
+    content:""; position:absolute; left:-7px; top:50%;
+    width:14px; height:14px;
+    border-left:1px solid rgba(255,255,255,.14);
+    border-bottom:1px solid rgba(255,255,255,.14);
+    background:rgba(31,27,36,.96);
+    transform:translateY(-50%) rotate(45deg);
+  }
+  .spot-tooltip[data-side="left"]::before{
+    left:auto; right:-7px;
+    border-left:0; border-bottom:0;
+    border-right:1px solid rgba(255,255,255,.14);
+    border-top:1px solid rgba(255,255,255,.14);
+  }
+  .story-panel.in .spot-tooltip{
+    opacity:1; pointer-events:auto;
+    transform:translate(var(--tip-x),-50%) scale(1);
+  }
+  .story-panel:has(.spot-card.open) .spot-tooltip{
+    opacity:0; pointer-events:none;
+    transition-delay:0s;
+  }
+  .spot-tooltip-label{
+    flex:1; min-width:0;
+    font:600 13px/1.25 "Bricolage Grotesque",sans-serif;
+  }
+  .spot-tooltip-more{
+    flex:0 0 auto; min-height:36px; padding:0 12px;
+    border:0; border-radius:999px;
+    background:#eb5e22; color:#fff; cursor:pointer;
+    font:600 11px/1 "Bricolage Grotesque",sans-serif;
+    white-space:nowrap;
+    transition:background .2s ease, transform .16s ease;
+  }
+  .spot-tooltip-more:hover{ background:#f26a2d; }
+  .spot-tooltip-more:active{ transform:scale(.96); }
+  .spot-tooltip-more:focus-visible{ outline:2px solid #fff; outline-offset:3px; }
+
   .spot-card{
     position:absolute; z-index:30;
     left:0; top:0;
@@ -680,6 +737,7 @@
 
   @media (prefers-reduced-motion: reduce){
     .spot::after{ animation:none !important; opacity:.6; }
+    .spot-tooltip{ transition:none !important; }
     .story-sector-link.continue-cue .story-trim-outline rect{ animation:none !important; }
   }
 
@@ -1214,6 +1272,16 @@
     return (x > 55 ? "l" : "r") + (y > 55 ? "t" : "b");
   }
 
+  function spotTooltipHTML(spot){
+    const side = spot.x > 55 ? "left" : "right";
+    return `
+      <div class="spot-tooltip" data-side="${side}"
+           style="--spot-x:${spot.x}%; --spot-y:${spot.y}%;" role="group" aria-label="${spot.cat}">
+        <span class="spot-tooltip-label">${spot.cat}</span>
+        <button class="spot-tooltip-more" type="button">Know more</button>
+      </div>`;
+  }
+
   function spotCardHTML(spot){
     const pos = spotQuadrant(spot.x, spot.y);
     return `
@@ -1253,6 +1321,7 @@
         <div class="story-eyebrow"><b>${eyebrowLabel}</b>&nbsp;·&nbsp;${String(position + 1).padStart(2,"0")} / ${total}</div>
         <h2 class="story-title">${s.title}</h2>
         <button class="spot" type="button" style="left:${s.spot.x}%; top:${s.spot.y}%;" aria-label="${s.spot.headline}"></button>
+        ${spotTooltipHTML(s.spot)}
         ${spotCardHTML(s.spot)}
       </section>`;
   }
@@ -1475,7 +1544,15 @@
     const dot = e.target.closest(".spot");
     if (dot){ e.stopPropagation(); toggleSpot(panel, dot); return; }
 
+    if (e.target.closest(".spot-tooltip-more")){
+      e.stopPropagation();
+      toggleSpot(panel, panel.querySelector(".spot"));
+      return;
+    }
+
     if (e.target.closest(".spot-close")){ e.stopPropagation(); closeSpot(panel); return; }
+
+    if (e.target.closest(".spot-tooltip")) return;
 
     if (e.target.closest(".spot-card")) return;   // clicks inside the open card (e.g. the CTA) do nothing yet
 
