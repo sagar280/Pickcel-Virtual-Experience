@@ -972,7 +972,7 @@
           proofBody:"Every completed order moves directly into the restaurant workflow with fewer manual handoffs.",
           stat:null, cta:"Book a demo" } },
         { title:"Order Status & Pickup", src:ASSET_BASE+"story/qsr/3.png", type:"image", spot:{
-          x:65, y:22, kind:"Use case", cat:"Order Status Boards",
+          x:70.4, y:22, tipSide:"right", kind:"Use case", cat:"Order Status Boards",
           headline:"Turn waiting into certainty",
           body:"Show every order moving from preparation to pickup in real time, helping guests know exactly when—and where—their meal is ready.",
           tags:["Live order status","Ready alerts","Pickup flow"],
@@ -1273,7 +1273,7 @@
   }
 
   function spotTooltipHTML(spot){
-    const side = spot.x > 55 ? "left" : "right";
+    const side = spot.tipSide || (spot.x > 55 ? "left" : "right");
     return `
       <div class="spot-tooltip" data-side="${side}"
            style="--spot-x:${spot.x}%; --spot-y:${spot.y}%;" role="group" aria-label="${spot.cat}">
