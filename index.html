@@ -450,6 +450,46 @@
   .story-nav-btn svg{ width:27px; height:27px; flex:0 0 auto; stroke-width:2; }
   .story-nav-btn:focus-visible{ outline:2px solid var(--paper); outline-offset:4px; }
   .story-nav-btn:disabled{ opacity:.28; cursor:default; pointer-events:none; }
+  .story-nav-btn:not(.story-sector-link){
+    position:relative; overflow:hidden;
+    border:2px solid #075ebd;
+    background:
+      linear-gradient(180deg, rgba(222,247,255,.95) 0%, rgba(105,196,255,.4) 31%, transparent 34%),
+      linear-gradient(180deg, #45a8ff 0%, #0873e6 48%, #0454bd 70%, #4eb6ff 100%);
+    color:#fff;
+    text-shadow:0 2px 2px rgba(0,39,105,.72);
+    box-shadow:
+      0 7px 0 #044997,
+      0 12px 22px rgba(0,54,145,.48),
+      inset 0 2px 2px rgba(255,255,255,.92),
+      inset 0 -5px 8px rgba(0,44,135,.42);
+    backdrop-filter:none;
+  }
+  .story-nav-btn:not(.story-sector-link)::before{
+    content:""; position:absolute; z-index:0;
+    left:12%; right:12%; top:7px; height:31%;
+    border-radius:999px;
+    background:linear-gradient(180deg, rgba(255,255,255,.88), rgba(214,243,255,.32));
+    pointer-events:none;
+  }
+  .story-nav-btn:not(.story-sector-link) > span,
+  .story-nav-btn:not(.story-sector-link) > svg{ position:relative; z-index:1; }
+  .story-nav-btn:not(.story-sector-link):hover{
+    background:
+      linear-gradient(180deg, rgba(238,251,255,.98) 0%, rgba(132,211,255,.46) 31%, transparent 34%),
+      linear-gradient(180deg, #62baff 0%, #1786ef 48%, #075fc9 70%, #68c5ff 100%);
+  }
+  .story-nav-btn:not(.story-sector-link):active{
+    transform:translateY(5px) scale(.97);
+    box-shadow:
+      0 2px 0 #044997,
+      0 5px 11px rgba(0,54,145,.4),
+      inset 0 2px 2px rgba(255,255,255,.76),
+      inset 0 -3px 7px rgba(0,44,135,.5);
+  }
+  .story-nav-btn:not(.story-sector-link):disabled{
+    opacity:.38; filter:saturate(.45); box-shadow:0 4px 0 #173d69;
+  }
   .story-sector-link{
     width:188px; height:54px; padding:0 16px; gap:7px;
     box-sizing:border-box;
