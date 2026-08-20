@@ -570,6 +570,7 @@
 
   .spot-tooltip{
     --tip-x:30px;
+    --tip-y:-50%;
     position:absolute; z-index:22;
     left:var(--spot-x); top:var(--spot-y);
     min-width:178px; max-width:220px; padding:13px 14px;
@@ -579,13 +580,18 @@
     background:rgba(31,27,36,.96); color:#f8f1f9;
     box-shadow:0 12px 28px rgba(0,0,0,.38);
     opacity:0; pointer-events:none;
-    transform:translate(var(--tip-x),-50%) scale(.94);
+    transform:translate(var(--tip-x),var(--tip-y)) scale(.94);
     transform-origin:left center;
     transition:opacity .28s ease .45s, transform .34s cubic-bezier(.2,.7,.2,1) .45s;
   }
   .spot-tooltip[data-side="left"]{
     --tip-x:calc(-100% - 30px);
     transform-origin:right center;
+  }
+  .spot-tooltip[data-side="top"]{
+    --tip-x:-50%;
+    --tip-y:calc(-100% - 30px);
+    transform-origin:center bottom;
   }
   .spot-tooltip::before{
     content:""; position:absolute; left:-7px; top:50%;
@@ -601,9 +607,16 @@
     border-right:1px solid rgba(255,255,255,.14);
     border-top:1px solid rgba(255,255,255,.14);
   }
+  .spot-tooltip[data-side="top"]::before{
+    left:50%; right:auto; top:auto; bottom:-7px;
+    border-left:0; border-top:0;
+    border-right:1px solid rgba(255,255,255,.14);
+    border-bottom:1px solid rgba(255,255,255,.14);
+    transform:translateX(-50%) rotate(45deg);
+  }
   .story-panel.in .spot-tooltip{
     opacity:1; pointer-events:auto;
-    transform:translate(var(--tip-x),-50%) scale(1);
+    transform:translate(var(--tip-x),var(--tip-y)) scale(1);
   }
   .story-panel:has(.spot-card.open) .spot-tooltip{
     opacity:0; pointer-events:none;
@@ -884,7 +897,7 @@
       key:"manufacturing", label:"Explore Manufacturing", src:ASSET_BASE+"cards/manufacturing.png", type:"image",
       story:[
         { title:"Production Visibility", src:ASSET_BASE+"story/manufacturing/1.png", type:"image", spot:{
-          x:50, y:30, kind:"Use case", cat:"Production Dashboards",
+          x:67.7, y:30, tipSide:"right", kind:"Use case", cat:"Production Dashboards",
           headline:"Turn factory data into immediate action",
           body:"Display live output, efficiency, quality and downtime information where production teams can see it—helping operators identify issues and respond before they affect the shift.",
           tags:["Live KPI dashboards","Downtime alerts","Shift visibility"],
@@ -892,7 +905,7 @@
           proofBody:"Keep operators and supervisors aligned with continuously updated performance information across the plant floor.",
           stat:null, cta:"Book a demo" } },
         { title:"Employee Feedback", src:ASSET_BASE+"story/manufacturing/2.png", type:"image", spot:{
-          x:16, y:38, kind:"Use case", cat:"Employee Engagement",
+          x:23.9, y:38, tipSide:"right", kind:"Use case", cat:"Employee Engagement",
           headline:"Give every employee a voice",
           body:"Place surveys, announcements and QR-powered feedback prompts in high-traffic areas so frontline employees can participate without needing a corporate email or workstation.",
           tags:["QR surveys","Employee feedback","Location-based messaging"],
@@ -900,7 +913,7 @@
           proofBody:"Collect timely feedback directly from the factory floor and manage engagement campaigns from one central platform.",
           stat:null, cta:"Book a demo" } },
         { title:"Safety Communications", src:ASSET_BASE+"story/manufacturing/3.png", type:"image", spot:{
-          x:46, y:18, kind:"Use case", cat:"Workplace Safety",
+          x:60.9, y:18, tipSide:"right", kind:"Use case", cat:"Workplace Safety",
           headline:"Put critical safety information in sight",
           body:"Communicate active hazards, PPE requirements, evacuation routes and shift-specific instructions on highly visible screens throughout the facility.",
           tags:["Safety alerts","PPE reminders","Emergency messaging"],
@@ -908,7 +921,7 @@
           proofBody:"Update safety messaging instantly by zone, production area or facility when conditions and priorities change.",
           stat:null, cta:"Book a demo" } },
         { title:"Workforce Communications", src:ASSET_BASE+"story/manufacturing/4.png", type:"image", spot:{
-          x:29, y:21, kind:"Use case", cat:"Internal Communications",
+          x:47.8, y:21, tipSide:"right", kind:"Use case", cat:"Internal Communications",
           headline:"Keep frontline teams informed and growing",
           body:"Share career opportunities, training programs, company updates and employee recognition where manufacturing teams naturally gather throughout their workday.",
           tags:["Career development","Training updates","Employee recognition"],
@@ -926,22 +939,22 @@
       key:"retail", label:"Explore Retail", src:ASSET_BASE+"cards/retail.png", type:"image",
       story:[
         { title:"The Store Experience", src:ASSET_BASE+"story/retail/1.webm", type:"video", spot:{
-          x:66, y:36, kind:"Use case", cat:"Window Advertising",
+          x:52.7, y:36, tipSide:"left", kind:"Use case", cat:"Window Advertising",
           headline:"One screen, every storefront",
           body:"Push a new campaign to every store's window display at once — no reprinting, no shipping.",
           tags:["Instant publishing","Multi-location"], stat:null, cta:"Book a demo" } },
         { title:"Digital Signage", src:ASSET_BASE+"story/retail/2.webm", type:"video", spot:{
-          x:30, y:58, kind:"Use case", cat:"Scheduled Campaigns",
+          x:38.7, y:58, tipSide:"left", kind:"Use case", cat:"Scheduled Campaigns",
           headline:"Content that reacts to the day",
           body:"Schedule promotions by daypart, weather, or stock level, so the message always fits the moment.",
           tags:["Dayparting","Auto-scheduling"], stat:null, cta:"Book a demo" } },
         { title:"The Customer Journey", src:ASSET_BASE+"story/retail/3.webm", type:"video", spot:{
-          x:72, y:62, kind:"Use case", cat:"Journey Mapping",
+          x:68.8, y:32, tipSide:"right", kind:"Use case", cat:"Journey Mapping",
           headline:"From the window to the till",
           body:"Connect what shoppers see outside to what greets them at checkout, without a separate system.",
           tags:["Journey mapping","In-store cues"], stat:null, cta:"Book a demo" } },
         { title:"Inventory Intelligence", src:ASSET_BASE+"story/retail/4.webm", type:"video", spot:{
-          x:40, y:30, kind:"Use case", cat:"Live Inventory",
+          x:50.2, y:30, tipSide:"right", kind:"Use case", cat:"Live Inventory",
           headline:"Never promote an empty shelf",
           body:"Displays pull live stock data, so a featured item swaps out the moment it sells through.",
           tags:["Live inventory sync","Auto-swap creative"], stat:null, cta:"Book a demo" } },
@@ -956,7 +969,7 @@
       key:"qsr", label:"Explore QSR", src:ASSET_BASE+"cards/qsr.png", type:"image",
       story:[
         { title:"Digital Menu Boards", src:ASSET_BASE+"story/qsr/1.png", type:"image", spot:{
-          x:66, y:10, kind:"Use case", cat:"Dynamic Menu Boards",
+          x:66, y:11.7, tipSide:"top", kind:"Use case", cat:"Dynamic Menu Boards",
           headline:"Menus that change with the moment",
           body:"Update pricing, combos and limited-time offers across every restaurant from one place—scheduled by daypart and published without replacing a single printed board.",
           tags:["Daypart scheduling","Remote price updates","Multi-location publishing"],
@@ -964,7 +977,7 @@
           proofBody:"Keep approved menus, pricing and promotions consistent across the entire QSR network.",
           stat:null, cta:"Book a demo" } },
         { title:"Self-Service Ordering", src:ASSET_BASE+"story/qsr/2.png", type:"image", spot:{
-          x:40, y:34, kind:"Use case", cat:"Self-Service Ordering",
+          x:49.8, y:34, tipSide:"right", kind:"Use case", cat:"Self-Service Ordering",
           headline:"A faster path from choice to checkout",
           body:"Guide guests through ordering, customization and payment with an intuitive kiosk experience that keeps queues moving during peak hours.",
           tags:["Guided ordering","Smart upselling","POS integration"],
@@ -980,7 +993,7 @@
           proofBody:"A clear digital handoff reduces counter questions and keeps the pickup area organized.",
           stat:null, cta:"Book a demo" } },
         { title:"Entrance Promotions", src:ASSET_BASE+"story/qsr/4.png", type:"image", spot:{
-          x:79, y:38, kind:"Use case", cat:"Entrance Promotions",
+          x:66.3, y:38, tipSide:"left", kind:"Use case", cat:"Entrance Promotions",
           headline:"Win the order before guests walk in",
           body:"Promote premium combos, limited-time offers and high-margin items at the entrance—updated remotely by time, location or campaign.",
           tags:["LTO campaigns","Daypart creative","Remote publishing"],
@@ -998,27 +1011,27 @@
       key:"corporate", label:"Explore Corporate", src:ASSET_BASE+"cards/corporate.png", type:"image",
       story:[
         { title:"The Lobby Experience", src:ASSET_BASE+"story/corporate/1.webm", type:"video", spot:{
-          x:62, y:36, kind:"Use case", cat:"Visitor Welcome",
+          x:47.8, y:36, tipSide:"left", kind:"Use case", cat:"Visitor Welcome",
           headline:"A lobby that greets by name",
           body:"Visitor check-in syncs straight to the lobby display for a welcome that feels personal.",
           tags:["Visitor sync","Brand moments"], stat:null, cta:"Book a demo" } },
         { title:"Meeting Spaces", src:ASSET_BASE+"story/corporate/2.webm", type:"video", spot:{
-          x:30, y:58, kind:"Use case", cat:"Room Status",
+          x:25.6, y:58, tipSide:"left", kind:"Use case", cat:"Room Status",
           headline:"Never walk into a booked room",
           body:"Live room status outside every door, synced to the calendar in real time.",
           tags:["Calendar sync","Room status"], stat:null, cta:"Book a demo" } },
         { title:"Wayfinding", src:ASSET_BASE+"story/corporate/3.webm", type:"video", spot:{
-          x:70, y:60, kind:"Use case", cat:"Interactive Directory",
+          x:64.5, y:60, tipSide:"left", kind:"Use case", cat:"Interactive Directory",
           headline:"Finding your way, faster",
           body:"Interactive directories cut the time new visitors spend wandering the halls.",
           tags:["Interactive maps","Multi-floor"], stat:null, cta:"Book a demo" } },
         { title:"The Employee Hub", src:ASSET_BASE+"story/corporate/4.webm", type:"video", spot:{
-          x:42, y:32, kind:"Use case", cat:"Company News",
+          x:54.1, y:32, tipSide:"right", kind:"Use case", cat:"Company News",
           headline:"News that reaches every floor",
           body:"Company updates land on every floor screen at once — no inbox required.",
           tags:["Company news","All-floor reach"], stat:null, cta:"Book a demo" } },
         { title:"A Corporate Story", src:ASSET_BASE+"story/corporate/5.webm", type:"video", spot:{
-          x:56, y:48, kind:"Case study", cat:"HQ Rollout",
+          x:76.9, y:48, tipSide:"right", kind:"Case study", cat:"HQ Rollout",
           headline:"From 40 emails to one screen",
           body:"How one headquarters replaced its all-staff email blasts with a single always-on hub.",
           tags:["12 floors","2,200 employees"], stat:"1 screen replaced ~40 emails/mo", cta:"Book a demo" } },
