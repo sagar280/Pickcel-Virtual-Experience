@@ -437,16 +437,17 @@
   .story-progress i.on{ background:var(--paper); }
 
   .story-nav{
+    --story-gap:8px;
     position:fixed; left:50%; bottom:clamp(18px,3vh,30px); z-index:76;
     transform:translateX(-50%);
-    display:flex; flex-direction:row; align-items:center; gap:8px;
+    display:flex; flex-direction:row; align-items:center; gap:var(--story-gap);
     padding:8px;
     border:1px solid rgba(191,154,132,.34);
     border-radius:999px;
     background:rgba(57,34,25,.94);
     box-shadow:0 12px 28px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.08);
   }
-  .story-nav:has(.story-sector-link:not([hidden])){ gap:8px; }
+  .story-nav:has(.story-sector-link:not([hidden])){ gap:var(--story-gap); }
   .story-nav-btn{
     width:144px; height:68px; padding:0 20px;
     display:flex; align-items:center; justify-content:center; gap:11px;
@@ -456,7 +457,10 @@
     font:600 14px/1 "Bricolage Grotesque",sans-serif;
     text-shadow:0 1px 1px rgba(0,0,0,.34);
     backdrop-filter:none;
-    transition:background .2s ease, color .2s ease, transform .16s ease, opacity .2s ease;
+    margin-left:0;
+    transition:background .2s ease, color .2s ease, transform .24s ease, opacity .2s ease,
+      width .3s cubic-bezier(.2,.7,.2,1), padding .3s cubic-bezier(.2,.7,.2,1),
+      margin .3s cubic-bezier(.2,.7,.2,1), gap .22s ease;
   }
   .story-nav-btn:hover{ background:#f26a2d; color:#fff; }
   .story-nav-btn.first-slide-cue{
@@ -474,6 +478,18 @@
   .story-nav-btn svg{ width:27px; height:27px; flex:0 0 auto; stroke-width:2; }
   .story-nav-btn:focus-visible{ outline:2px solid var(--paper); outline-offset:4px; }
   .story-nav-btn:disabled{ opacity:.28; cursor:default; pointer-events:none; }
+  #storyDown{ overflow:hidden; }
+  #storyDown > *{ transition:opacity .16s ease .12s; }
+  .story-nav-btn.story-end-hidden{
+    width:0; min-width:0; padding-left:0; padding-right:0; gap:0;
+    margin-left:calc(0px - var(--story-gap));
+    opacity:0; transform:scale(.72); visibility:hidden;
+    box-shadow:none;
+    transition:background .2s ease, color .2s ease, transform .24s ease, opacity .18s ease,
+      width .3s cubic-bezier(.2,.7,.2,1), padding .3s cubic-bezier(.2,.7,.2,1),
+      margin .3s cubic-bezier(.2,.7,.2,1), gap .22s ease, visibility 0s linear .3s;
+  }
+  #storyDown.story-end-hidden > *{ opacity:0; transition-delay:0s; }
   .story-sector-link{
     position:relative;
     width:188px; height:68px; padding:0 16px; gap:7px;
@@ -757,15 +773,15 @@
 
   @media (max-width:640px){
     .story-eyebrow{ font-size:10.5px; }
-    .story-nav{ gap:4px; padding:4px; }
-    .story-nav:has(.story-sector-link:not([hidden])){ gap:4px; }
+    .story-nav{ --story-gap:4px; gap:var(--story-gap); padding:4px; }
+    .story-nav:has(.story-sector-link:not([hidden])){ gap:var(--story-gap); }
     .story-nav-btn{ width:132px; padding:0 16px; }
     .story-sector-link{ width:164px; height:68px; padding:0 12px; font-size:11px; }
   }
 
   @media (max-width:560px){
-    .story-nav{ gap:3px; padding:3px; }
-    .story-nav:has(.story-sector-link:not([hidden])){ gap:3px; }
+    .story-nav{ --story-gap:3px; gap:var(--story-gap); padding:3px; }
+    .story-nav:has(.story-sector-link:not([hidden])){ gap:var(--story-gap); }
     .story-nav-btn{ width:110px; height:60px; padding:0 10px; font-size:12px; }
     .story-sector-link{ width:156px; height:60px; font-size:10.5px; }
     .story-nav-btn svg{ width:23px; height:23px; }
@@ -1369,6 +1385,9 @@
     storyUpBtn.disabled   = storyIndex <= 0;
     const atLastSlide = storyPanels.length > 0 && storyIndex >= storyPanels.length - 1;
     storyDownBtn.disabled = atLastSlide;
+    storyDownBtn.classList.toggle("story-end-hidden", atLastSlide);
+    storyDownBtn.setAttribute("aria-hidden", String(atLastSlide));
+    storyDownBtn.tabIndex = atLastSlide ? -1 : 0;
     storyDownBtn.classList.toggle("first-slide-cue", storyPanels.length > 1 && storyIndex === 0);
     const showSectorLinks = storyPanels.length > 0 && storyIndex >= 1;
     storyPrevSectorBtn.hidden = !showSectorLinks;
@@ -1384,6 +1403,9 @@
       storyNextSectorLabel.textContent = SECTORS[nextSector].label;
       storyPrevSectorBtn.setAttribute("aria-label", `${SECTORS[previousSector].label}, starting at slide 1`);
       storyNextSectorBtn.setAttribute("aria-label", `${SECTORS[nextSector].label}, starting at slide 1`);
+    }
+    if (atLastSlide && document.activeElement === storyDownBtn){
+      requestAnimationFrame(() => storyNextSectorBtn.focus({ preventScroll:true }));
     }
   }
 
