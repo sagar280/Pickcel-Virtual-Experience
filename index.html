@@ -373,6 +373,52 @@
   }
   .story-panel.in img, .story-panel.in video{ transform:scale(1); opacity:1; }
 
+  .story-sector-preview{
+    position:absolute; inset:0; z-index:75;
+    display:grid; place-items:center; padding:clamp(28px,6vw,84px);
+    box-sizing:border-box;
+    background:
+      radial-gradient(circle at 18% 55%, rgba(235,94,34,.24), transparent 38%),
+      linear-gradient(135deg,#120b0b 0%,#2b120d 52%,#080708 100%);
+    color:var(--paper); text-align:center;
+    opacity:0; visibility:hidden; pointer-events:none;
+    transform:translateX(-7%);
+    transition:opacity .32s ease, transform .42s cubic-bezier(.2,.7,.2,1), visibility 0s linear .42s;
+    touch-action:pan-y;
+  }
+  .story-sector-preview.on{
+    opacity:1; visibility:visible; pointer-events:auto; transform:none;
+    transition-delay:0s;
+  }
+  .story-sector-preview-inner{ display:grid; justify-items:center; gap:18px; }
+  .story-sector-preview-kicker{
+    color:#ff8b55; font-size:12px; font-weight:700;
+    letter-spacing:.14em; text-transform:uppercase;
+  }
+  .story-sector-preview-title{
+    margin:0; max-width:100%; display:flex; align-items:center; justify-content:center; gap:22px;
+    font-family:"Bricolage Grotesque",sans-serif;
+    font-size:clamp(32px,4vw,68px); line-height:1.05; letter-spacing:-.035em;
+  }
+  .story-sector-preview-title svg{
+    width:clamp(38px,5vw,70px); height:clamp(38px,5vw,70px);
+    flex:0 0 auto; color:#ff6a22;
+    animation:preview-arrow 1.35s ease-in-out infinite;
+  }
+  .story-sector-preview-hint{
+    margin:0; color:var(--ink-soft); font-size:13px;
+    letter-spacing:.08em; text-transform:uppercase;
+  }
+  .story.sector-preview-on .story-nav,
+  .story.sector-preview-on .story-progress{
+    opacity:0; visibility:hidden; pointer-events:none;
+    transition:opacity .2s ease, visibility 0s linear .2s;
+  }
+  @keyframes preview-arrow{
+    0%,100%{ transform:translateX(0); }
+    50%{ transform:translateX(10px); }
+  }
+
   .story-ph{
     position:absolute; inset:0;
     display:grid; place-content:center; gap:14px; justify-items:center;
@@ -829,6 +875,7 @@
     .spot::after{ animation:none !important; opacity:.6; }
     .spot-tooltip{ transition:none !important; }
     .story-sector-link.continue-cue .story-trim-outline rect{ animation:none !important; }
+    .story-sector-preview-title svg{ animation:none !important; }
   }
 
   @media (max-width:640px){
@@ -922,6 +969,16 @@
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
     <span>Close</span>
   </button>
+  <div class="story-sector-preview" id="storySectorPreview" role="status" aria-live="polite" aria-hidden="true">
+    <div class="story-sector-preview-inner">
+      <span class="story-sector-preview-kicker">Next industry</span>
+      <h2 class="story-sector-preview-title">
+        <span id="storySectorPreviewLabel"></span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </h2>
+      <p class="story-sector-preview-hint">Swipe right again to explore</p>
+    </div>
+  </div>
   <div class="story-progress" id="storyProgress"></div>
   <div class="story-nav">
     <button class="story-nav-btn story-sector-link" id="storyPrevSector" aria-label="Explore previous experience" hidden>
@@ -1324,6 +1381,8 @@
   const storyNextSectorBtn = document.getElementById("storyNextSector");
   const storyPrevSectorLabel = document.getElementById("storyPrevSectorLabel");
   const storyNextSectorLabel = document.getElementById("storyNextSectorLabel");
+  const storySectorPreview = document.getElementById("storySectorPreview");
+  const storySectorPreviewLabel = document.getElementById("storySectorPreviewLabel");
   const qrModal = document.getElementById("qrModal");
   const qrCloseBtn = document.getElementById("qrClose");
 
@@ -1333,6 +1392,7 @@
   let storyIndex = 0;
   let storyCleanupTimer = null;
   let storyResetRaf = 0;
+  let storySectorPreviewOpen = false;
   let qrReturnFocus = null;
   const TOUR_INTERVAL_MS = 5000;
   let tourAutoplay = false;
@@ -1575,6 +1635,41 @@
     updateStoryNav();
   }
 
+  function hideSectorPreview(resumeMedia = true){
+    if (!storySectorPreviewOpen) return;
+    storySectorPreviewOpen = false;
+    storySectorPreview.classList.remove("on");
+    storySectorPreview.setAttribute("aria-hidden", "true");
+    storyEl.classList.remove("sector-preview-on");
+    if (resumeMedia && storyOpen){
+      syncStoryMedia(storyIndex);
+      scheduleTourAdvance();
+    }
+  }
+
+  function showSectorPreview(){
+    if (!storyOpen || storyIndex !== storyPanels.length - 1) return;
+    const currentSector = Number(storyTrack.dataset.sector);
+    const nextSector = (currentSector + 1) % SECTORS.length;
+    const nextName = SECTORS[nextSector].label.replace("Explore ", "");
+    clearTourTimer();
+    const open = storyTrack.querySelector(".spot-card.open");
+    if (open) closeSpot(open.closest(".story-panel"));
+    storyPanels[storyIndex]?.querySelector("video")?.pause();
+    storySectorPreview.dataset.sector = nextSector;
+    storySectorPreviewLabel.textContent = `${nextName} — Digital Signage`;
+    storySectorPreviewOpen = true;
+    storySectorPreview.classList.add("on");
+    storySectorPreview.setAttribute("aria-hidden", "false");
+    storyEl.classList.add("sector-preview-on");
+  }
+
+  function openPreviewSector(){
+    const nextSector = Number(storySectorPreview.dataset.sector);
+    hideSectorPreview(false);
+    openStory(nextSector);
+  }
+
   function goToSlide(idx){
     idx = Math.max(0, Math.min(storyPanels.length - 1, idx));
     cancelAnimationFrame(storyResetRaf);
@@ -1589,6 +1684,7 @@
   }
 
   function openStory(sectorIndex, continuingTour = false){
+    hideSectorPreview(false);
     if (!continuingTour) stopTourAutoplay();
     clearTimeout(storyCleanupTimer);
     storyCleanupTimer = null;
@@ -1636,6 +1732,7 @@
   }
 
   function closeStory(){
+    hideSectorPreview(false);
     stopTourAutoplay();
     cancelAnimationFrame(storyResetRaf);
     storyResetRaf = 0;
@@ -1685,7 +1782,7 @@
   let storySwipeSuppressClick = false;
   const STORY_SWIPE_THRESHOLD = 48;
 
-  storyScrollEl.addEventListener("pointerdown", e => {
+  storyEl.addEventListener("pointerdown", e => {
     if (!storyOpen || e.pointerType === "mouse" || !e.isPrimary || storySwipeId !== null) return;
     if (qrModal.classList.contains("on") || e.target.closest("button, a, .spot-card, .spot-tooltip")) return;
     storySwipeId = e.pointerId;
@@ -1700,12 +1797,19 @@
     storySwipeId = null;
     if (e.type === "pointercancel" || Math.abs(dx) < STORY_SWIPE_THRESHOLD || Math.abs(dx) <= Math.abs(dy) * 1.25) return;
     storySwipeSuppressClick = true;
-    goToSlide(storyIndex + (dx < 0 ? 1 : -1));
+    if (storySectorPreviewOpen){
+      if (dx > 0) openPreviewSector();
+      else hideSectorPreview();
+    } else if (dx > 0 && storyIndex === storyPanels.length - 1){
+      showSectorPreview();
+    } else {
+      goToSlide(storyIndex + (dx < 0 ? 1 : -1));
+    }
     setTimeout(() => { storySwipeSuppressClick = false; }, 0);
   };
 
-  storyScrollEl.addEventListener("pointerup", finishStorySwipe);
-  storyScrollEl.addEventListener("pointercancel", finishStorySwipe);
+  storyEl.addEventListener("pointerup", finishStorySwipe);
+  storyEl.addEventListener("pointercancel", finishStorySwipe);
 
   storyScrollEl.addEventListener("scroll", () => {
     const open = storyTrack.querySelector(".spot-card.open");
@@ -1759,12 +1863,27 @@
       }
       return;
     }
+    if (storySectorPreviewOpen){
+      if (e.key === "Escape" || e.key === "ArrowLeft"){
+        e.preventDefault();
+        hideSectorPreview();
+      } else if (e.key === "ArrowRight"){
+        e.preventDefault();
+        openPreviewSector();
+      }
+      return;
+    }
     if (e.key === "Escape" && anySpotOpen()){
       const open = storyTrack.querySelector(".spot-card.open");
       closeSpot(open.closest(".story-panel"));
       return;
     }
     if (e.key === "Escape" && storyOpen){ closeStory(); return; }
+    if (storyOpen && e.key === "ArrowRight" && storyIndex === storyPanels.length - 1){
+      e.preventDefault();
+      showSectorPreview();
+      return;
+    }
     if (storyOpen && e.key === "ArrowUp"){ e.preventDefault(); goToSlide(storyIndex - 1); return; }
     if (storyOpen && e.key === "ArrowDown"){ e.preventDefault(); goToSlide(storyIndex + 1); return; }
   });
