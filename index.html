@@ -801,8 +801,7 @@
     background:rgba(255,255,255,.1); color:#fff; cursor:pointer;
   }
   .qr-close:hover{ background:rgba(255,255,255,.18); }
-  .qr-close:focus-visible,
-  .qr-open:focus-visible{ outline:2px solid #fff; outline-offset:3px; }
+  .qr-close:focus-visible{ outline:2px solid #fff; outline-offset:3px; }
   .qr-kicker{
     margin:0 44px 7px;
     color:#ff8b55; font-size:11px; font-weight:700;
@@ -817,16 +816,6 @@
   }
   .qr-frame img{ display:block; width:100%; height:100%; object-fit:contain; }
   .qr-url{ margin:0 0 16px; color:#d9d0d7; font-size:12px; }
-  .qr-open{
-    min-height:46px; padding:0 20px;
-    display:inline-flex; align-items:center; justify-content:center; gap:8px;
-    border-radius:999px; background:#eb5e22; color:#fff;
-    font:600 13px/1 "Bricolage Grotesque",sans-serif;
-    text-decoration:none;
-    transition:background .2s ease, transform .16s ease;
-  }
-  .qr-open:hover{ background:#f26a2d; transform:translateY(-1px); }
-
   @media (max-height:680px){
     .qr-card{ padding:20px; }
     .qr-title{ font-size:23px; }
@@ -976,9 +965,6 @@
       <img src="assets/book-demo-qr.png" width="512" height="512" alt="QR code for the Pickcel book a demo page">
     </div>
     <p class="qr-url">pickcel.com/book-a-demo</p>
-    <a class="qr-open" href="https://www.pickcel.com/book-a-demo">Open booking page
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-    </a>
   </section>
 </div>
 
@@ -1339,7 +1325,6 @@
   const storyNextSectorLabel = document.getElementById("storyNextSectorLabel");
   const qrModal = document.getElementById("qrModal");
   const qrCloseBtn = document.getElementById("qrClose");
-  const qrOpenLink = qrModal.querySelector(".qr-open");
 
   let storyPanels = [];
   let storyOpen = false;
@@ -1733,11 +1718,8 @@
     if (qrModal.classList.contains("on")){
       if (e.key === "Escape"){ e.preventDefault(); closeDemoQr(); return; }
       if (e.key === "Tab"){
-        const target = e.shiftKey ? qrOpenLink : qrCloseBtn;
-        if ((e.shiftKey && document.activeElement === qrCloseBtn) || (!e.shiftKey && document.activeElement === qrOpenLink)){
-          e.preventDefault();
-          target.focus();
-        }
+        e.preventDefault();
+        qrCloseBtn.focus();
       }
       return;
     }
