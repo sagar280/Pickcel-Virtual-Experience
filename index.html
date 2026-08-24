@@ -1678,7 +1678,8 @@
   });
 
   /* Horizontal touch swipe: left advances and right returns. On the final
-     slide, a right swipe continues directly to the next industry's slide 1. */
+     slide, either horizontal direction continues to the next industry's
+     slide 1, avoiding device/gesture-direction ambiguity at the boundary. */
   let storySwipeId = null;
   let storySwipeStartX = 0;
   let storySwipeStartY = 0;
@@ -1700,7 +1701,7 @@
     storySwipeId = null;
     if (e.type === "pointercancel" || Math.abs(dx) < STORY_SWIPE_THRESHOLD || Math.abs(dx) <= Math.abs(dy) * 1.25) return;
     storySwipeSuppressClick = true;
-    if (dx > 0 && storyIndex === storyPanels.length - 1){
+    if (storyIndex === storyPanels.length - 1){
       const currentSector = Number(storyTrack.dataset.sector);
       openStory((currentSector + 1) % SECTORS.length);
     } else {
