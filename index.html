@@ -769,6 +769,72 @@
   }
   .spot-cta:hover{ background:var(--tour-hi); transform:translateY(-1px); }
 
+  .qr-modal{
+    position:fixed; inset:0; z-index:120;
+    display:grid; place-items:center; padding:24px;
+    box-sizing:border-box;
+    background:rgba(8,5,12,.78);
+    opacity:0; visibility:hidden; pointer-events:none;
+    transition:opacity .24s ease, visibility 0s linear .24s;
+  }
+  .qr-modal.on{
+    opacity:1; visibility:visible; pointer-events:auto;
+    transition-delay:0s;
+  }
+  .qr-card{
+    position:relative;
+    width:min(430px,calc(100vw - 40px));
+    max-height:calc(100svh - 40px); overflow:auto;
+    padding:28px; box-sizing:border-box;
+    border:1px solid rgba(255,255,255,.16); border-radius:28px;
+    background:#251b19; color:#fff; text-align:center;
+    box-shadow:0 26px 70px rgba(0,0,0,.55);
+    transform:translateY(14px) scale(.96);
+    transition:transform .3s cubic-bezier(.2,.7,.2,1);
+  }
+  .qr-modal.on .qr-card{ transform:none; }
+  .qr-close{
+    position:absolute; top:14px; right:14px;
+    width:44px; height:44px; padding:0;
+    display:grid; place-items:center;
+    border:0; border-radius:50%;
+    background:rgba(255,255,255,.1); color:#fff; cursor:pointer;
+  }
+  .qr-close:hover{ background:rgba(255,255,255,.18); }
+  .qr-close:focus-visible,
+  .qr-open:focus-visible{ outline:2px solid #fff; outline-offset:3px; }
+  .qr-kicker{
+    margin:0 44px 7px;
+    color:#ff8b55; font-size:11px; font-weight:700;
+    letter-spacing:.13em; text-transform:uppercase;
+  }
+  .qr-title{ margin:0 36px 8px; font-size:28px; line-height:1.1; }
+  .qr-copy{ margin:0 auto 18px; max-width:310px; color:#c9c2ca; font-size:14px; line-height:1.45; }
+  .qr-frame{
+    width:min(292px,70vw); aspect-ratio:1; margin:0 auto 14px;
+    padding:14px; box-sizing:border-box;
+    border-radius:20px; background:#fff;
+  }
+  .qr-frame img{ display:block; width:100%; height:100%; object-fit:contain; }
+  .qr-url{ margin:0 0 16px; color:#d9d0d7; font-size:12px; }
+  .qr-open{
+    min-height:46px; padding:0 20px;
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    border-radius:999px; background:#eb5e22; color:#fff;
+    font:600 13px/1 "Bricolage Grotesque",sans-serif;
+    text-decoration:none;
+    transition:background .2s ease, transform .16s ease;
+  }
+  .qr-open:hover{ background:#f26a2d; transform:translateY(-1px); }
+
+  @media (max-height:680px){
+    .qr-card{ padding:20px; }
+    .qr-title{ font-size:23px; }
+    .qr-copy{ margin-bottom:12px; }
+    .qr-frame{ width:min(230px,48vh); padding:10px; margin-bottom:10px; }
+    .qr-url{ margin-bottom:10px; }
+  }
+
   @media (prefers-reduced-motion: reduce){
     .spot::after{ animation:none !important; opacity:.6; }
     .spot-tooltip{ transition:none !important; }
@@ -896,6 +962,24 @@
   <div class="story-scroll" id="storyScroll">
     <div class="story-track" id="storyTrack"></div>
   </div>
+</div>
+
+<div class="qr-modal" id="qrModal" aria-hidden="true">
+  <section class="qr-card" role="dialog" aria-modal="true" aria-labelledby="qrTitle" aria-describedby="qrCopy">
+    <button class="qr-close" id="qrClose" type="button" aria-label="Close QR code">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <p class="qr-kicker">Scan with your phone</p>
+    <h2 class="qr-title" id="qrTitle">Book a demo</h2>
+    <p class="qr-copy" id="qrCopy">Open your phone camera and scan this QR code to visit Pickcel’s demo booking page.</p>
+    <div class="qr-frame">
+      <img src="assets/book-demo-qr.png" width="512" height="512" alt="QR code for the Pickcel book a demo page">
+    </div>
+    <p class="qr-url">pickcel.com/book-a-demo</p>
+    <a class="qr-open" href="https://www.pickcel.com/book-a-demo">Open booking page
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </a>
+  </section>
 </div>
 
 <script>
@@ -1253,6 +1337,9 @@
   const storyNextSectorBtn = document.getElementById("storyNextSector");
   const storyPrevSectorLabel = document.getElementById("storyPrevSectorLabel");
   const storyNextSectorLabel = document.getElementById("storyNextSectorLabel");
+  const qrModal = document.getElementById("qrModal");
+  const qrCloseBtn = document.getElementById("qrClose");
+  const qrOpenLink = qrModal.querySelector(".qr-open");
 
   let storyPanels = [];
   let storyOpen = false;
@@ -1260,6 +1347,7 @@
   let storyIndex = 0;
   let storyCleanupTimer = null;
   let storyResetRaf = 0;
+  let qrReturnFocus = null;
   const TOUR_INTERVAL_MS = 5000;
   let tourAutoplay = false;
   let tourTimer = 0;
@@ -1272,6 +1360,29 @@
   function stopTourAutoplay(){
     tourAutoplay = false;
     clearTourTimer();
+  }
+
+  function openDemoQr(trigger){
+    qrReturnFocus = trigger;
+    clearTourTimer();
+    storyPanels[storyIndex]?.querySelector("video")?.pause();
+    qrModal.classList.add("on");
+    qrModal.setAttribute("aria-hidden", "false");
+    requestAnimationFrame(() => qrCloseBtn.focus({ preventScroll:true }));
+  }
+
+  function closeDemoQr(){
+    if (!qrModal.classList.contains("on")) return;
+    qrModal.classList.remove("on");
+    qrModal.setAttribute("aria-hidden", "true");
+    if (storyOpen){
+      syncStoryMedia(storyIndex);
+      scheduleTourAdvance();
+    }
+    if (qrReturnFocus && document.contains(qrReturnFocus)){
+      qrReturnFocus.focus({ preventScroll:true });
+    }
+    qrReturnFocus = null;
   }
 
   function scheduleTourAdvance(){
@@ -1575,6 +1686,10 @@
   storyPrevSectorBtn.addEventListener("click", () => openStory(Number(storyPrevSectorBtn.dataset.sector)));
   storyNextSectorBtn.addEventListener("click", () => openStory(Number(storyNextSectorBtn.dataset.sector)));
   document.querySelector(".tour").addEventListener("click", startTour);
+  qrCloseBtn.addEventListener("click", closeDemoQr);
+  qrModal.addEventListener("click", e => {
+    if (e.target === qrModal) closeDemoQr();
+  });
 
   storyScrollEl.addEventListener("scroll", () => {
     const open = storyTrack.querySelector(".spot-card.open");
@@ -1586,6 +1701,14 @@
   storyTrack.addEventListener("click", e => {
     const panel = e.target.closest(".story-panel");
     if (!panel) return;
+
+    const demoLink = e.target.closest(".spot-cta");
+    if (demoLink){
+      e.preventDefault();
+      e.stopPropagation();
+      openDemoQr(demoLink);
+      return;
+    }
 
     const dot = e.target.closest(".spot");
     if (dot){ e.stopPropagation(); toggleSpot(panel, dot); return; }
@@ -1607,6 +1730,17 @@
 
   addEventListener("keydown", e => {
     if (e.target.matches("input, textarea")) return;
+    if (qrModal.classList.contains("on")){
+      if (e.key === "Escape"){ e.preventDefault(); closeDemoQr(); return; }
+      if (e.key === "Tab"){
+        const target = e.shiftKey ? qrOpenLink : qrCloseBtn;
+        if ((e.shiftKey && document.activeElement === qrCloseBtn) || (!e.shiftKey && document.activeElement === qrOpenLink)){
+          e.preventDefault();
+          target.focus();
+        }
+      }
+      return;
+    }
     if (e.key === "Escape" && anySpotOpen()){
       const open = storyTrack.querySelector(".spot-card.open");
       closeSpot(open.closest(".story-panel"));
