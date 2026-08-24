@@ -342,7 +342,8 @@
   .story-scroll{
     position:absolute; inset:0;
     overflow:hidden;
-    touch-action:none;
+    touch-action:pan-y;
+    overscroll-behavior-x:contain;
     overscroll-behavior-y:contain;
     scroll-snap-type:none;
     scrollbar-width:none;
@@ -1676,6 +1677,36 @@
     if (e.target === qrModal) closeDemoQr();
   });
 
+  /* Horizontal touch swipe: left advances, right returns. Vertical movement
+     is ignored so normal up/down gestures never change story slides. */
+  let storySwipeId = null;
+  let storySwipeStartX = 0;
+  let storySwipeStartY = 0;
+  let storySwipeSuppressClick = false;
+  const STORY_SWIPE_THRESHOLD = 48;
+
+  storyScrollEl.addEventListener("pointerdown", e => {
+    if (!storyOpen || e.pointerType === "mouse" || !e.isPrimary || storySwipeId !== null) return;
+    if (qrModal.classList.contains("on") || e.target.closest("button, a, .spot-card, .spot-tooltip")) return;
+    storySwipeId = e.pointerId;
+    storySwipeStartX = e.clientX;
+    storySwipeStartY = e.clientY;
+  });
+
+  const finishStorySwipe = e => {
+    if (e.pointerId !== storySwipeId) return;
+    const dx = e.clientX - storySwipeStartX;
+    const dy = e.clientY - storySwipeStartY;
+    storySwipeId = null;
+    if (e.type === "pointercancel" || Math.abs(dx) < STORY_SWIPE_THRESHOLD || Math.abs(dx) <= Math.abs(dy) * 1.25) return;
+    storySwipeSuppressClick = true;
+    goToSlide(storyIndex + (dx < 0 ? 1 : -1));
+    setTimeout(() => { storySwipeSuppressClick = false; }, 0);
+  };
+
+  storyScrollEl.addEventListener("pointerup", finishStorySwipe);
+  storyScrollEl.addEventListener("pointercancel", finishStorySwipe);
+
   storyScrollEl.addEventListener("scroll", () => {
     const open = storyTrack.querySelector(".spot-card.open");
     if (open) closeSpot(open.closest(".story-panel"));
@@ -1684,6 +1715,11 @@
   }, { passive:true });
 
   storyTrack.addEventListener("click", e => {
+    if (storySwipeSuppressClick){
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
     const panel = e.target.closest(".story-panel");
     if (!panel) return;
 
