@@ -1403,12 +1403,12 @@
     return (x > 55 ? "l" : "r") + (y > 55 ? "t" : "b");
   }
 
-  function spotTooltipHTML(spot){
+  function spotTooltipHTML(title, spot){
     const side = spot.tipSide || (spot.x > 55 ? "left" : "right");
     return `
       <div class="spot-tooltip" data-side="${side}"
-           style="--spot-x:${spot.x}%; --spot-y:${spot.y}%;" role="group" aria-label="${spot.cat}">
-        <span class="spot-tooltip-label">${spot.cat}</span>
+           style="--spot-x:${spot.x}%; --spot-y:${spot.y}%;" role="group" aria-label="${title}">
+        <span class="spot-tooltip-label">${title}</span>
         <button class="spot-tooltip-more" type="button">Know more</button>
       </div>`;
   }
@@ -1452,7 +1452,7 @@
         <div class="story-eyebrow"><b>${eyebrowLabel}</b>&nbsp;·&nbsp;${String(position + 1).padStart(2,"0")} / ${total}</div>
         <h2 class="story-title">${s.title}</h2>
         <button class="spot" type="button" style="left:${s.spot.x}%; top:${s.spot.y}%;" aria-label="${s.spot.headline}"></button>
-        ${spotTooltipHTML(s.spot)}
+        ${spotTooltipHTML(s.title, s.spot)}
         ${spotCardHTML(s.spot)}
       </section>`;
   }
