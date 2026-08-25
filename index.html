@@ -594,7 +594,7 @@
     --tip-y:-50%;
     position:absolute; z-index:22;
     left:var(--spot-x); top:var(--spot-y);
-    min-width:178px; max-width:220px; padding:13px 14px;
+    width:max-content; min-width:230px; max-width:min(310px,calc(100vw - 32px)); padding:13px 14px;
     box-sizing:border-box;
     display:flex; align-items:center; gap:12px;
     border:1px solid rgba(255,255,255,.14); border-radius:14px;
@@ -646,6 +646,7 @@
   .spot-tooltip-label{
     flex:1; min-width:0;
     font:600 13px/1.25 "Bricolage Grotesque",sans-serif;
+    white-space:nowrap;
   }
   .spot-tooltip-more{
     flex:0 0 auto; min-height:36px; padding:0 12px;
