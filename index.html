@@ -873,6 +873,266 @@
     .glow{ animation:none !important; }
     .story-panel img, .story-panel video{ transform:none !important; }
   }
+
+  /* ---------- Portrait touch-kiosk layout ----------
+     The landscape presentation remains unchanged. In portrait, the home
+     cards become larger touch-first posters and story media is contained so
+     important screens are not lost to a severe 16:9 crop. */
+  @media (orientation:portrait){
+    :root{
+      --card-vw:68vw;
+      --card-w:clamp(300px,var(--card-vw),620px);
+      --gap:clamp(24px,4vw,44px);
+      --radius:clamp(18px,2.5vw,28px);
+    }
+
+    body{ overflow:hidden; }
+    .bgfx{
+      background-position:34% center;
+    }
+    .stage{
+      height:100svh;
+      min-height:680px;
+      padding:clamp(42px,6svh,104px) 0 clamp(28px,4svh,64px);
+      justify-content:flex-start;
+    }
+    .eyebrow{
+      width:min(88vw,760px);
+      padding:0;
+      font-size:clamp(34px,6vw,58px);
+      line-height:1;
+    }
+    .cta{ margin-top:clamp(24px,3svh,44px); }
+    .tour{
+      min-height:64px;
+      padding:0 clamp(24px,4vw,38px);
+      gap:13px;
+      font-size:clamp(16px,2.4vw,22px);
+      box-shadow:0 20px 44px -18px rgba(200,107,54,.9);
+    }
+    .tour svg{ width:14px; height:16px; }
+
+    .viewport{
+      flex:1 1 auto;
+      min-height:0;
+      margin-top:clamp(20px,3svh,54px);
+      padding:clamp(24px,3svh,52px) 0 clamp(34px,4svh,70px);
+      display:flex;
+      align-items:center;
+      touch-action:pan-y;
+    }
+    .track{ align-items:center; }
+    .card{
+      aspect-ratio:.72;
+      filter:saturate(.88) brightness(.82);
+      transition:filter .35s ease;
+    }
+    .card.is-focus{ filter:saturate(1) brightness(1); }
+    .card .frame{
+      border:1px solid rgba(255,255,255,.16);
+      box-shadow:0 34px 80px -28px rgba(0,0,0,.92), inset 0 0 0 1px rgba(237,231,245,.08);
+    }
+    .card:hover .frame img,
+    .card:hover .frame video{ transform:scale(1.02); }
+    .card .label{
+      padding:clamp(24px,4vw,38px);
+      gap:14px;
+    }
+    .card .label b{ font-size:clamp(23px,3.4vw,34px); }
+    .card .label i{ font-size:clamp(24px,3vw,32px); }
+    .controls{
+      flex:0 0 auto;
+      margin-top:0;
+      gap:22px;
+    }
+    .nav{
+      width:72px; height:72px;
+      border-width:2px;
+      background:rgba(35,20,15,.82);
+    }
+    .nav svg{ width:36px; height:36px; }
+
+    .story{
+      background:
+        radial-gradient(circle at 50% 42%,rgba(92,45,25,.3),transparent 48%),
+        #090706;
+    }
+    .story-panel{
+      background:transparent;
+    }
+    .story-panel img,
+    .story-panel video{
+      inset:15svh 0 auto;
+      width:100%; height:58svh;
+      object-fit:contain;
+      transform:scale(1.04);
+    }
+    .story-panel.portrait-native img,
+    .story-panel.portrait-native video{
+      inset:0;
+      width:100%; height:100%;
+      object-fit:cover;
+    }
+    .story-scrim{
+      background:
+        linear-gradient(to bottom,rgba(0,0,0,.5),transparent 14svh),
+        linear-gradient(to top,rgba(0,0,0,.72),transparent 30svh);
+    }
+    .story-eyebrow{
+      left:clamp(26px,5vw,56px);
+      top:clamp(30px,4svh,64px);
+      font-size:clamp(12px,1.8vw,17px);
+    }
+    .story-eyebrow b{ font-size:clamp(14px,2vw,19px); }
+    .story-close{
+      top:clamp(24px,3svh,46px);
+      right:clamp(22px,4vw,44px);
+      min-width:132px; height:68px;
+      padding:0 24px;
+      font-size:17px;
+      background:rgba(31,23,21,.92);
+    }
+    .story-close svg{ width:21px; height:21px; }
+    .story-progress{
+      left:50%; bottom:auto; top:11svh;
+      transform:translateX(-50%);
+      gap:9px;
+    }
+    .story-progress i{ width:42px; height:4px; }
+
+    .story-nav{
+      --story-gap:8px;
+      left:50%; bottom:clamp(20px,3svh,42px);
+      width:min(calc(100vw - 32px),760px);
+      padding:8px;
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:var(--story-gap);
+      border-radius:32px;
+    }
+    .story-nav:has(#storyUp.story-start-hidden):has(.story-sector-link[hidden]){
+      width:min(360px,calc(100vw - 40px));
+      grid-template-columns:1fr;
+    }
+    .story-nav-btn,
+    .story-sector-link{
+      width:100%; height:76px;
+      min-width:0;
+      padding:0 18px;
+      font-size:clamp(14px,2vw,18px);
+    }
+    .story-sector-link{ font-size:clamp(12px,1.7vw,16px); }
+    .story-nav-btn.story-start-hidden,
+    .story-nav-btn.story-end-hidden{ display:none; }
+    .story-sector-link span{
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    /* Hotspots are mapped by JS to the visible, contained image. */
+    .spot{
+      left:var(--portrait-spot-x,50%) !important;
+      top:var(--portrait-spot-y,42%) !important;
+      width:64px; height:64px;
+    }
+    .spot::before{ width:18px; height:18px; }
+    .story-panel[data-sector="0"] .spot::before,
+    .story-panel[data-sector="2"] .spot::before{ width:22px; height:22px; }
+    .spot-tooltip{
+      position:absolute;
+      left:50% !important; top:auto !important;
+      bottom:clamp(222px,17svh,330px);
+      width:min(calc(100vw - 44px),640px);
+      min-width:0; max-width:none;
+      min-height:78px;
+      padding:14px 16px 14px 22px;
+      gap:16px;
+      transform:translateX(-50%) translateY(12px) scale(.96) !important;
+      transform-origin:center bottom !important;
+      border-radius:20px;
+    }
+    .story-panel.in .spot-tooltip{
+      transform:translateX(-50%) translateY(0) scale(1) !important;
+    }
+    .spot-tooltip::before{ display:none; }
+    .spot-tooltip-label{
+      font-size:clamp(15px,2.2vw,20px);
+      white-space:normal;
+    }
+    .spot-tooltip-more{
+      min-height:50px;
+      padding:0 20px;
+      font-size:clamp(13px,1.8vw,16px);
+    }
+
+    .spot-card,
+    .spot-card.has-proof{
+      position:fixed;
+      left:50% !important; top:50% !important;
+      transform:translate(-50%,-50%) !important;
+    }
+    .spot-card .spot-card-inner,
+    .spot-card.has-proof .spot-card-inner{
+      width:min(720px,calc(100vw - 40px));
+      max-height:calc(100svh - 160px);
+      padding:clamp(28px,4vw,44px);
+      border-radius:28px;
+      background:rgba(29,25,34,.98);
+    }
+    .spot-close{
+      top:20px; right:20px;
+      width:48px; height:48px;
+      background:rgba(255,255,255,.08);
+    }
+    .spot-close svg{ width:20px; height:20px; }
+    .spot-kind{ margin-bottom:14px; padding-right:58px; font-size:clamp(12px,1.7vw,16px); }
+    .spot-headline{ margin-bottom:14px; font-size:clamp(24px,3.4vw,34px); }
+    .spot-body{ margin-bottom:20px; font-size:clamp(15px,2vw,20px); line-height:1.5; }
+    .spot-tags{ gap:9px; margin-bottom:22px; }
+    .spot-tags span{ padding:8px 13px; font-size:clamp(12px,1.6vw,15px); }
+    .spot-proof{ margin:20px 0; padding:18px; }
+    .spot-proof-head strong{ font-size:clamp(15px,2vw,19px); }
+    .spot-proof-head b{ font-size:clamp(13px,1.7vw,16px); }
+    .spot-proof p{ font-size:clamp(13px,1.8vw,17px); }
+    .spot-cta{ min-height:56px; padding:0 22px; font-size:clamp(14px,1.9vw,18px); }
+
+    .qr-modal{ padding:clamp(20px,4vw,48px); }
+    .qr-card{
+      width:min(760px,calc(100vw - 40px));
+      max-height:calc(100svh - 80px);
+      padding:clamp(34px,5vw,58px);
+      border-radius:36px;
+    }
+    .qr-close{ width:60px; height:60px; top:20px; right:20px; }
+    .qr-kicker{ margin:0 64px 12px; font-size:clamp(13px,1.8vw,17px); }
+    .qr-title{ margin:0 54px 14px; font-size:clamp(36px,5vw,54px); }
+    .qr-copy{ max-width:560px; margin-bottom:28px; font-size:clamp(16px,2.2vw,22px); }
+    .qr-frame{ width:min(520px,70vw); padding:20px; border-radius:28px; }
+    .qr-url{ margin-top:18px; font-size:clamp(14px,1.8vw,18px); }
+  }
+
+  @media (orientation:portrait) and (max-height:1200px){
+    :root{ --card-vw:56vw; --card-w:clamp(270px,var(--card-vw),460px); }
+    .stage{ padding-top:36px; padding-bottom:24px; }
+    .eyebrow{ font-size:clamp(30px,5vw,44px); }
+    .cta{ margin-top:20px; }
+    .tour{ min-height:56px; }
+    .viewport{ margin-top:14px; padding:18px 0 28px; }
+    .controls .nav{ width:62px; height:62px; }
+  }
+
+  @media (orientation:portrait) and (max-height:900px){
+    .stage{ padding-top:28px; padding-bottom:20px; }
+    .cta{ margin-top:16px; }
+    .tour{ min-height:52px; }
+    .viewport{ margin-top:10px; padding:14px 0 22px; }
+    .controls .nav{ width:58px; height:58px; }
+    .story-panel img,.story-panel video{ inset:12svh 0 auto; height:54svh; }
+    .story-progress{ top:9svh; }
+    .spot-tooltip{ bottom:190px; }
+    .story-nav-btn,.story-sector-link{ height:64px; }
+  }
 </style>
 </head>
 <body>
@@ -1102,27 +1362,32 @@
     {
       key:"corporate", label:"Explore Corporate", src:ASSET_BASE+"cards/corporate.png", type:"image",
       story:[
-        { title:"The Lobby Experience", src:ASSET_BASE+"story/corporate/1.webm", type:"video", spot:{
+        { title:"The Lobby Experience", src:ASSET_BASE+"story/corporate/1.webm", type:"video",
+          portraitSrc:ASSET_BASE+"story-portrait/corporate/1.webp", portraitType:"image", portraitSpot:{x:37.8,y:37.8}, spot:{
           x:47.8, y:36, tipSide:"left", kind:"Use case", cat:"Visitor Welcome",
           headline:"A lobby that greets by name",
           body:"Visitor check-in syncs straight to the lobby display for a welcome that feels personal.",
           tags:["Visitor sync","Brand moments"], stat:null, cta:"Book a demo" } },
-        { title:"Meeting Spaces", src:ASSET_BASE+"story/corporate/2.webm", type:"video", spot:{
+        { title:"Meeting Spaces", src:ASSET_BASE+"story/corporate/2.webm", type:"video",
+          portraitSrc:ASSET_BASE+"story-portrait/corporate/2.webp", portraitType:"image", portraitSpot:{x:18.9,y:38.1}, spot:{
           x:25.6, y:58, tipSide:"left", kind:"Use case", cat:"Room Status",
           headline:"Never walk into a booked room",
           body:"Live room status outside every door, synced to the calendar in real time.",
           tags:["Calendar sync","Room status"], stat:null, cta:"Book a demo" } },
-        { title:"Wayfinding", src:ASSET_BASE+"story/corporate/3.webm", type:"video", spot:{
+        { title:"Wayfinding", src:ASSET_BASE+"story/corporate/3.webm", type:"video",
+          portraitSrc:ASSET_BASE+"story-portrait/corporate/3.webp", portraitType:"image", portraitSpot:{x:88.2,y:42.1}, spot:{
           x:64.5, y:60, tipSide:"left", kind:"Use case", cat:"Interactive Directory",
           headline:"Finding your way, faster",
           body:"Interactive directories cut the time new visitors spend wandering the halls.",
           tags:["Interactive maps","Multi-floor"], stat:null, cta:"Book a demo" } },
-        { title:"The Employee Hub", src:ASSET_BASE+"story/corporate/4.webm", type:"video", spot:{
+        { title:"The Employee Hub", src:ASSET_BASE+"story/corporate/4.webm", type:"video",
+          portraitSrc:ASSET_BASE+"story-portrait/corporate/4.webp", portraitType:"image", portraitSpot:{x:65.5,y:40.2}, spot:{
           x:54.1, y:32, tipSide:"right", kind:"Use case", cat:"Company News",
           headline:"News that reaches every floor",
           body:"Company updates land on every floor screen at once — no inbox required.",
           tags:["Company news","All-floor reach"], stat:null, cta:"Book a demo" } },
-        { title:"A Corporate Story", src:ASSET_BASE+"story/corporate/5.webm", type:"video", spot:{
+        { title:"A Corporate Story", src:ASSET_BASE+"story/corporate/5.webm", type:"video",
+          portraitSrc:ASSET_BASE+"story-portrait/corporate/5.webp", portraitType:"image", portraitSpot:{x:84.1,y:41.2}, spot:{
           x:76.9, y:48, tipSide:"right", kind:"Case study", cat:"HQ Rollout",
           headline:"From 40 emails to one screen",
           body:"How one headquarters replaced its all-staff email blasts with a single always-on hub.",
@@ -1135,6 +1400,7 @@
   const track    = document.getElementById("track");
   const reduced  = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const touchFirst = matchMedia("(any-pointer: coarse)").matches;
+  const portraitLayout = matchMedia("(orientation: portrait)");
 
   let cards = [], setWidth = 0, offset = 0, target = null;
   const arc = { dip: 46, tilt: 7 };
@@ -1198,8 +1464,8 @@
     const trackLeft = track.getBoundingClientRect().left;
     const mid  = innerWidth / 2;
     const span = mid + (cards[0]?.offsetWidth || 0) / 2;
-    const depth = arc.dip;                             // how far the centre dips
-    const tilt  = arc.tilt;                            // max degrees at the edges
+    const depth = portraitLayout.matches ? 18 : arc.dip;
+    const tilt  = portraitLayout.matches ? 2.5 : arc.tilt;
 
     for (const c of cards){
       const cx = trackLeft + c.offsetLeft + c.offsetWidth / 2;
@@ -1209,6 +1475,7 @@
       const s  = 1 - 0.055 * Math.abs(t);
       c.style.transform = `translateY(${y.toFixed(2)}px) rotate(${r.toFixed(2)}deg) scale(${s.toFixed(3)})`;
       c.style.zIndex = String(100 - Math.round(Math.abs(t) * 50));
+      c.classList.toggle("is-focus", Math.abs(t) < .46);
     }
   }
 
@@ -1440,7 +1707,8 @@
     return `
       <section class="story-panel${s.src ? " filled" : ""}"
                data-sector="${sector}" data-slide="${slide}"
-               data-src="${s.src || ""}" data-type="${s.type || ""}" tabindex="-1">
+               data-src="${s.src || ""}" data-type="${s.type || ""}"
+               data-portrait-src="${s.portraitSrc || ""}" data-portrait-type="${s.portraitType || ""}" tabindex="-1">
         <div class="story-ph">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M21 16l-5-5-6 6-3-3-4 4"/>
@@ -1517,10 +1785,58 @@
     }
   }
 
+  function mapPortraitHotspot(panel){
+    if (!portraitLayout.matches || !panel) return;
+    const media = panel.querySelector("img, video");
+    if (!media) return;
+
+    const mediaWidth = media.tagName === "VIDEO" ? media.videoWidth : media.naturalWidth;
+    const mediaHeight = media.tagName === "VIDEO" ? media.videoHeight : media.naturalHeight;
+    if (!mediaWidth || !mediaHeight) return;
+
+    const box = media.getBoundingClientRect();
+    const panelBox = panel.getBoundingClientRect();
+    const mediaRatio = mediaWidth / mediaHeight;
+    const boxRatio = box.width / box.height;
+    let visibleWidth = box.width;
+    let visibleHeight = box.height;
+    let visibleLeft = box.left;
+    let visibleTop = box.top;
+
+    if (boxRatio > mediaRatio){
+      visibleWidth = box.height * mediaRatio;
+      visibleLeft += (box.width - visibleWidth) / 2;
+    } else {
+      visibleHeight = box.width / mediaRatio;
+      visibleTop += (box.height - visibleHeight) / 2;
+    }
+
+    const slide = SECTORS[Number(panel.dataset.sector)]?.story[Number(panel.dataset.slide)];
+    const spot = slide?.portraitSpot || slide?.spot;
+    if (!spot) return;
+    const mappedX = visibleLeft - panelBox.left + visibleWidth * spot.x / 100;
+    const mappedY = visibleTop - panelBox.top + visibleHeight * spot.y / 100;
+    panel.style.setProperty("--portrait-spot-x", `${mappedX.toFixed(1)}px`);
+    panel.style.setProperty("--portrait-spot-y", `${mappedY.toFixed(1)}px`);
+  }
+
+  function mapAllPortraitHotspots(){
+    if (!portraitLayout.matches || !storyOpen) return;
+    storyPanels.forEach(mapPortraitHotspot);
+  }
+
   function mountStoryMedia(panel, active){
     let media = panel.querySelector("img, video");
+    const usePortraitMedia = portraitLayout.matches && !!panel.dataset.portraitSrc;
+    const source = usePortraitMedia ? panel.dataset.portraitSrc : panel.dataset.src;
+    const type = usePortraitMedia ? panel.dataset.portraitType : panel.dataset.type;
+    panel.classList.toggle("portrait-native", usePortraitMedia);
+    if (media && media.dataset.source !== source){
+      unmountStoryMedia(panel);
+      media = null;
+    }
     if (!media){
-      if (panel.dataset.type === "video"){
+      if (type === "video"){
         media = document.createElement("video");
         media.muted = true;
         media.loop = true;
@@ -1528,16 +1844,26 @@
         media.setAttribute("muted", "");
         media.setAttribute("playsinline", "");
         media.preload = active ? "auto" : "metadata";
-        media.addEventListener("loadeddata", () => panel.classList.add("media-ready"), { once:true });
+        media.addEventListener("loadeddata", () => {
+          panel.classList.add("media-ready");
+          mapPortraitHotspot(panel);
+        }, { once:true });
       } else {
         media = document.createElement("img");
         media.alt = "";
         media.decoding = "async";
-        media.addEventListener("load", () => panel.classList.add("media-ready"), { once:true });
+        media.addEventListener("load", () => {
+          panel.classList.add("media-ready");
+          mapPortraitHotspot(panel);
+        }, { once:true });
       }
-      media.src = panel.dataset.src;
+      media.dataset.source = source;
+      media.src = source;
       panel.insertBefore(media, panel.firstChild);
-      if (media.tagName === "IMG" && media.complete) panel.classList.add("media-ready");
+      if (media.tagName === "IMG" && media.complete){
+        panel.classList.add("media-ready");
+        mapPortraitHotspot(panel);
+      }
     }
 
     if (media.tagName === "VIDEO"){
@@ -1545,6 +1871,7 @@
       if (active) media.play().catch(() => {});
       else media.pause();
     }
+    requestAnimationFrame(() => mapPortraitHotspot(panel));
   }
 
   function unmountStoryMedia(panel){
@@ -1574,6 +1901,7 @@
     [...storyProgress.children].forEach((dot, i) => dot.classList.toggle("on", i === idx));
     syncStoryMedia(idx);
     updateStoryNav();
+    requestAnimationFrame(mapAllPortraitHotspots);
   }
 
   function goToSlide(idx){
@@ -1781,7 +2109,11 @@
   let resizeTimer;
   addEventListener("resize", () => {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(build, 160);
+    resizeTimer = setTimeout(() => {
+      build();
+      if (storyOpen) syncStoryMedia(storyIndex);
+      mapAllPortraitHotspots();
+    }, 160);
   });
 
   document.addEventListener("visibilitychange", () => {
