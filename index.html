@@ -440,7 +440,9 @@
   .story-nav{
     --story-gap:8px;
     position:fixed; left:50%; bottom:clamp(18px,3vh,30px); z-index:76;
-    transform:translateX(-50%);
+    transform:translate3d(-50%,0,0);
+    backface-visibility:hidden;
+    isolation:isolate;
     display:flex; flex-direction:row; align-items:center; gap:var(--story-gap);
     padding:8px;
     border:1px solid rgba(191,154,132,.34);
@@ -1010,12 +1012,12 @@
       gap:var(--story-gap);
       border-radius:32px;
     }
-    .story-nav:has(#storyUp.story-start-hidden):has(.story-sector-link[hidden]){
+    .story-nav[data-state="first"]{
       width:min(360px,calc(100vw - 40px));
       grid-template-columns:1fr;
       border-radius:999px;
     }
-    .story-nav:has(#storyUp.story-start-hidden):has(.story-sector-link[hidden]) #storyDown{
+    .story-nav[data-state="first"] #storyDown{
       grid-column:1;
       grid-row:1;
     }
@@ -1029,6 +1031,8 @@
       min-width:0;
       padding:0 18px;
       font-size:clamp(14px,2vw,18px);
+      backface-visibility:hidden;
+      transition:background .16s ease, color .16s ease, transform .16s ease, opacity .16s ease;
     }
     .story-sector-link{ font-size:clamp(12px,1.7vw,16px); }
     .story-nav-btn.story-start-hidden,
@@ -1193,7 +1197,7 @@
     <span>Close</span>
   </button>
   <div class="story-progress" id="storyProgress"></div>
-  <div class="story-nav">
+  <div class="story-nav" data-state="first">
     <button class="story-nav-btn story-sector-link" id="storyPrevSector" aria-label="Explore previous experience" hidden>
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
       <span id="storyPrevSectorLabel"></span>
@@ -1622,6 +1626,7 @@
   const storyTrack     = document.getElementById("storyTrack");
   const storyProgress  = document.getElementById("storyProgress");
   const storyCloseBtn  = document.getElementById("storyClose");
+  const storyNav       = document.querySelector(".story-nav");
   const storyUpBtn     = document.getElementById("storyUp");
   const storyDownBtn   = document.getElementById("storyDown");
   const storyPrevSectorBtn = document.getElementById("storyPrevSector");
@@ -1788,11 +1793,12 @@
 
   function updateStoryNav(){
     const atFirstSlide = storyPanels.length > 0 && storyIndex <= 0;
+    const atLastSlide = storyPanels.length > 0 && storyIndex >= storyPanels.length - 1;
+    storyNav.dataset.state = atFirstSlide ? "first" : atLastSlide ? "last" : "middle";
     storyUpBtn.disabled = atFirstSlide;
     storyUpBtn.classList.toggle("story-start-hidden", atFirstSlide);
     storyUpBtn.setAttribute("aria-hidden", String(atFirstSlide));
     storyUpBtn.tabIndex = atFirstSlide ? -1 : 0;
-    const atLastSlide = storyPanels.length > 0 && storyIndex >= storyPanels.length - 1;
     storyDownBtn.disabled = atLastSlide;
     storyDownBtn.classList.toggle("story-end-hidden", atLastSlide);
     storyDownBtn.setAttribute("aria-hidden", String(atLastSlide));
